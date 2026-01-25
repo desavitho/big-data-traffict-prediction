@@ -1,0 +1,377 @@
+[INFO] Loading YOLOv8 model (Shared)...
+[INFO] Model Loaded.
+[INFO] Starting web server at http://0.0.0.0:5000
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://15.235.193.32:5000
+[33mPress CTRL+C to quit[0m
+[2026-01-20 22:39:08,423] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:08] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:09,696] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:09] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:10,554] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:10] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:11,472] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:11] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:12,579] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:12] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:16,134] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:16] "[35m[1mGET /?ide_webview_request_time=1768922628513 HTTP/1.1[0m" 500 -
+127.0.0.1 - - [20/Jan/2026 22:39:16] "[33mGET /@vite/client HTTP/1.1[0m" 404 -
+127.0.0.1 - - [20/Jan/2026 22:39:29] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 22:39:32] "GET /api/stats HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 22:39:33] "GET /api/stats HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 22:39:34] "GET /api/stats HTTP/1.1" 200 -
+[2026-01-20 22:39:35,924] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:35] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:48,865] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:48] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:49,856] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:49] "[35m[1mGET / HTTP/1.1[0m" 500 -
+[2026-01-20 22:39:50,265] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:39:50] "[35m[1mGET / HTTP/1.1[0m" 500 -
+127.0.0.1 - - [20/Jan/2026 22:40:00] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 22:40:04] "GET /api/stats HTTP/1.1" 200 -
+[2026-01-20 22:40:10,260] ERROR in app: Exception on / [HEAD]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:40:10] "[35m[1mHEAD / HTTP/1.1[0m" 500 -
+[2026-01-20 22:40:17,091] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/var/www/vehicle-counter/app/routes.py", line 19, in index
+    return render_template("index.html")
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/templating.py", line 133, in _render
+    rv = template.render(context)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/var/www/vehicle-counter/app/templates/index.html", line 146, in top-level template code
+    <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1071, in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/flask/app.py", line 1060, in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+  File "/var/www/vehicle-counter/venv/lib/python3.10/site-packages/werkzeug/routing/map.py", line 924, in build
+    raise BuildError(endpoint, values, method, self)
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'video_feed'. Did you mean 'main.video_feed' instead?
+127.0.0.1 - - [20/Jan/2026 22:40:17] "[35m[1mGET / HTTP/1.1[0m" 500 -

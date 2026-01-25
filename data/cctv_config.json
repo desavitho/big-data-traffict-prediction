@@ -1,0 +1,26 @@
+[
+    {
+        "id": "6303d482-047c-4ec9-be5e-7cb1c6c811f2",
+        "name": "Simpang Gedebage - Soekarno Hatta",
+        "url": "https://pelindung.bandung.go.id:3443/video/HIKSVISION/Soekarnogedebage.m3u8",
+        "active": true
+    },
+    {
+        "id": "c22a03ba-a0f7-4549-9eab-5ddd9e4eff80",
+        "name": "Gedebage Arah GBLA",
+        "url": "https://pelindung.bandung.go.id:3443/video/DAHUA/GEDEBAGE.m3u8",
+        "active": false
+    },
+    {
+        "id": "79ff48b2-c0ec-4bff-9bbe-b95e6c07df8b",
+        "name": "Pertigaan Waas Batununggal",
+        "url": "https://pelindung.bandung.go.id:3443/video/HIKSVISION/WaaspertigaankompleksBatununggal.m3u8",
+        "active": false
+    },
+    {
+        "id": "94e81404-c691-413f-ae76-e2ae97ebd92e",
+        "name": "Simpang Kordon",
+        "url": "https://pelindung.bandung.go.id:3443/video/HIKSVISION/Perkordon.m3u8",
+        "active": false
+    }
+]
