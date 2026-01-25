@@ -1,3 +1,6 @@
+#DEMO
+https://veh-counter.f-host.site/
+
 # AI Vehicle Counter & Analytics System
 
 Sistem penghitung kendaraan real-time berbasis AI (YOLOv8) yang dirancang untuk berjalan di lingkungan headless (VPS/Server) dengan antarmuka web modern untuk pemantauan dan analisis data lalu lintas.
