@@ -48,8 +48,8 @@ Sistem penghitung kendaraan real-time berbasis AI (YOLOv8) yang dirancang untuk 
 
 1. **Clone Repository**
    ```bash
-   git clone <repository_url>
-   cd vehicle-counter
+   git clone https://github.com/AvicenaFahmiWibisono/Real-Tme-Vehicle-Analytics-Yolo.git
+   cd Real-Tme-Vehicle-Analytics-Yolo
    ```
 
 2. **Buat Virtual Environment**
@@ -121,22 +121,6 @@ vehicle-counter/
 ├── run.py                 # Entry point
 ├── requirements.txt
 └── README.md
-```
-
-```
-vehicle-counter/
-├── app/
-│   ├── core/           # Logika utama (Camera, YOLO, Utils)
-│   ├── templates/      # File HTML (Dashboard)
-│   ├── routes.py       # Route Flask & API Endpoint
-│   └── globals.py      # Variabel global
-├── data/
-│   ├── cctv_config.json # Daftar kamera
-│   ├── traffic_stats.json # Database sederhana (JSON) untuk history
-│   └── ...
-├── run.py              # Entry point aplikasi
-├── config.py           # Konfigurasi konstanta
-└── requirements.txt    # Daftar dependensi
 ```
 
 ## Troubleshooting
