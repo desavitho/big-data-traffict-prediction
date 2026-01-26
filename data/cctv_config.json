@@ -3,7 +3,7 @@
         "id": "6303d482-047c-4ec9-be5e-7cb1c6c811f2",
         "name": "Simpang Gedebage - Soekarno Hatta",
         "url": "https://pelindung.bandung.go.id:3443/video/HIKSVISION/Soekarnogedebage.m3u8",
-        "active": true
+        "active": false
     },
     {
         "id": "c22a03ba-a0f7-4549-9eab-5ddd9e4eff80",
@@ -21,6 +21,18 @@
         "id": "94e81404-c691-413f-ae76-e2ae97ebd92e",
         "name": "Simpang Kordon",
         "url": "https://pelindung.bandung.go.id:3443/video/HIKSVISION/Perkordon.m3u8",
+        "active": false
+    },
+    {
+        "id": "5f402fe7-1627-4a2f-bef0-c81a7c633f95",
+        "name": "SIMPANG TUGU KUJANG Kota Bogor",
+        "url": "https://restreamer2.kotabogor.go.id/memfs/5a5cf878-9d9b-4400-a73a-27a5b24a6ec4.m3u8",
+        "active": true
+    },
+    {
+        "id": "63a9f9db-1302-4790-a1c1-de8ea8ad8013",
+        "name": "JL. JUANDA ARAH KANTOR POS Kota Bogor",
+        "url": "https://restreamer3.kotabogor.go.id/memfs/e2d12ced-bcc3-4826-b872-97fcce335e93.m3u8",
         "active": false
     }
 ]
