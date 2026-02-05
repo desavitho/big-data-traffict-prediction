@@ -34,46 +34,71 @@
         }
     </style>
 </head>
-<body class="min-h-screen p-6">
+<body class="min-h-screen p-4 md:p-6">
     
     <!-- Navbar -->
-    <nav class="flex flex-col md:flex-row justify-between items-center mb-8 px-4 gap-4">
-        <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <i class="fas fa-video text-white"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold text-white">SmartTraffic <span class="text-blue-500">AI</span></h1>
-                <p class="text-xs text-gray-400">Real-time Vehicle Analytics</p>
-            </div>
-        </div>
-        <div class="flex flex-wrap justify-center md:justify-end items-center gap-4 w-full md:w-auto">
-            <!-- Reset Button -->
-            <button onclick="resetData()" class="flex items-center gap-2 text-sm text-red-400 hover:text-white bg-slate-800 hover:bg-red-600 px-3 py-1 rounded-full border border-red-900/50 hover:border-red-500 transition-colors" title="Erase All Data">
-                <i class="fas fa-trash-alt"></i> Reset
-            </button>
-
-            <!-- Export Button -->
-            <div class="relative group">
-                <button class="flex items-center gap-2 text-sm text-gray-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-full border border-slate-700 transition-colors">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <div class="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-2 hidden group-hover:block z-50">
-                    <a href="/metrics" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <i class="fas fa-chart-line mr-2"></i> Prometheus Metrics
-                    </a>
-                    <a href="/export/csv" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white">
-                        <i class="fas fa-file-csv mr-2"></i> CSV Report
-                    </a>
+    <nav class="glass-panel mb-8 px-6 py-4 sticky top-4 z-50 shadow-2xl shadow-black/20">
+        <div class="flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-white/10">
+                    <i class="fas fa-video text-white text-xl"></i>
+                </div>
+                <div class="hidden md:block">
+                    <h1 class="text-2xl font-bold text-white tracking-tight">
+                        SmartTraffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI</span>
+                    </h1>
+                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span>Live Monitor</span>
+                        <span class="text-slate-600">|</span>
+                        <span class="text-gray-400">Real-time Detection</span>
+                    </div>
                 </div>
             </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
 
-            <span class="flex items-center gap-2 text-sm text-gray-300 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-                <span class="live-indicator"></span> LIVE FEED
-            </span>
-            <div class="text-right">
-                <p class="text-sm font-semibold" id="current-time">--:--</p>
-                <p class="text-xs text-gray-400" id="current-date">--/--/----</p>
+            <!-- Menu Items -->
+            <div id="mobile-menu" class="hidden md:flex w-full md:w-auto flex-col md:flex-row items-center gap-3 mt-4 md:mt-0 transition-all duration-300">
+                <!-- Reset Button -->
+                <button onclick="resetData()" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-red-900/30 text-red-400 hover:text-red-300 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-red-500/50 group" title="Erase All Data">
+                    <i class="fas fa-trash-alt group-hover:animate-bounce"></i>
+                    <span>Reset</span>
+                </button>
+
+                <!-- Export Dropdown -->
+                <div class="relative group w-full md:w-auto">
+                    <button class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-gray-500/50">
+                        <i class="fas fa-download text-gray-400"></i> Export
+                    </button>
+                    <div class="absolute right-0 mt-2 w-full md:w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl py-2 hidden group-hover:block z-50 backdrop-blur-xl">
+                        <a href="/metrics" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors rounded-t-xl">
+                            <i class="fas fa-chart-line mr-2 text-blue-400"></i> Prometheus
+                        </a>
+                        <a href="/export/csv" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors rounded-b-xl">
+                            <i class="fas fa-file-csv mr-2 text-green-400"></i> CSV Report
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="h-8 w-px bg-slate-700 mx-1 hidden md:block"></div>
+
+                <!-- Dashboard Link -->
+                <a href="/dashboard" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-indigo-500/50">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+
+                <a href="/documentation" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-gray-400 hover:text-white rounded-lg border border-slate-700 transition-all" title="Documentation">
+                    <i class="fas fa-book"></i> <span class="md:hidden">Documentation</span>
+                </a>
+
+                <div class="w-full md:w-auto text-center md:text-right md:ml-2 md:border-l md:border-slate-700 md:pl-4 mt-2 md:mt-0">
+                    <p class="text-sm font-bold text-white" id="current-time">--:--</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider" id="current-date">--/--/----</p>
+                </div>
             </div>
         </div>
     </nav>
@@ -283,9 +308,21 @@
                     <label class="block text-xs text-gray-400 mb-1 uppercase">Stream URL (.m3u8)</label>
                     <input type="text" id="new-cam-url" class="w-full bg-slate-900/50 border border-slate-600 text-white rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://...">
                 </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Latitude</label>
+                        <input type="text" id="new-cam-lat" class="w-full bg-slate-900/50 border border-slate-600 text-white rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="-6.200000">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 uppercase">Longitude</label>
+                        <input type="text" id="new-cam-lng" class="w-full bg-slate-900/50 border border-slate-600 text-white rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="106.816666">
+                    </div>
+                </div>
+
                 <div class="pt-4 border-t border-slate-700">
                     <p class="text-xs text-gray-400 mb-2 uppercase font-semibold">Authentication Required</p>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs text-gray-400 mb-1 uppercase">Username</label>
                             <input type="text" id="new-cam-user" class="w-full bg-slate-900/50 border border-slate-600 text-white rounded p-2 focus:ring-blue-500 focus:border-blue-500">
@@ -444,6 +481,7 @@
         // Global State
         let activeSourceId = null;
         let cameraToDeleteId = null;
+        let editingCameraId = null;
 
         // Helper: Calculate Percentage
         const getPercent = (val, total) => {
@@ -492,7 +530,17 @@
                     actionDiv.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>';
                 }
                 
-                // Delete Button (Only show on hover or always visible but subtle)
+                // Edit Button
+                const editBtn = document.createElement('button');
+                editBtn.className = "text-gray-500 hover:text-blue-400 p-1.5 rounded-full hover:bg-slate-600 transition-colors opacity-0 group-hover:opacity-100";
+                editBtn.title = "Edit Camera";
+                editBtn.innerHTML = '<i class="fas fa-edit text-xs"></i>';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openEditModal(source);
+                };
+
+                // Delete Button
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = "text-gray-500 hover:text-red-500 p-1.5 rounded-full hover:bg-slate-600 transition-colors opacity-0 group-hover:opacity-100";
                 deleteBtn.title = "Delete Camera";
@@ -502,6 +550,7 @@
                     openDeleteModal(source.id);
                 };
                 
+                actionDiv.appendChild(editBtn);
                 actionDiv.appendChild(deleteBtn);
                 item.appendChild(infoDiv);
                 item.appendChild(actionDiv);
@@ -512,21 +561,39 @@
 
         // --- Modal Functions ---
         function openAddModal() {
+            editingCameraId = null;
             document.getElementById('add-camera-modal').classList.remove('hidden');
+            document.getElementById('new-cam-name').value = '';
+            document.getElementById('new-cam-url').value = '';
+            document.getElementById('new-cam-lat').value = '';
+            document.getElementById('new-cam-lng').value = '';
+            document.getElementById('new-cam-user').value = '';
+            document.getElementById('new-cam-pass').value = '';
+            document.getElementById('new-cam-name').focus();
+        }
+
+        function openEditModal(source) {
+            editingCameraId = source.id;
+            document.getElementById('add-camera-modal').classList.remove('hidden');
+            document.getElementById('new-cam-name').value = source.name;
+            document.getElementById('new-cam-url').value = source.url;
+            document.getElementById('new-cam-lat').value = source.lat || '';
+            document.getElementById('new-cam-lng').value = source.lng || '';
+            document.getElementById('new-cam-user').value = '';
+            document.getElementById('new-cam-pass').value = '';
             document.getElementById('new-cam-name').focus();
         }
 
         function closeAddModal() {
             document.getElementById('add-camera-modal').classList.add('hidden');
-            document.getElementById('new-cam-name').value = '';
-            document.getElementById('new-cam-url').value = '';
-            document.getElementById('new-cam-user').value = '';
-            document.getElementById('new-cam-pass').value = '';
+            editingCameraId = null;
         }
 
         async function saveNewCamera() {
             const name = document.getElementById('new-cam-name').value.trim();
             const url = document.getElementById('new-cam-url').value.trim();
+            const lat = document.getElementById('new-cam-lat').value.trim();
+            const lng = document.getElementById('new-cam-lng').value.trim();
             const username = document.getElementById('new-cam-user').value.trim();
             const password = document.getElementById('new-cam-pass').value.trim();
 
@@ -539,11 +606,17 @@
                 return;
             }
 
+            const endpoint = editingCameraId ? '/api/edit_camera' : '/api/add_camera';
+            const payload = { 
+                name, url, lat, lng, username, password,
+                id: editingCameraId // ignored if null/add
+            };
+
             try {
-                const response = await fetch('/api/add_camera', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, url, username, password })
+                    body: JSON.stringify(payload)
                 });
                 const result = await response.json();
                 
@@ -1235,6 +1308,13 @@
                 alert("Failed to connect to server");
             }
         }
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        });
     </script>
 </body>
 </html>

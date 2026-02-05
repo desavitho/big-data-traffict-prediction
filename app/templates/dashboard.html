@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Dashboard - SmartTraffic AI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <!-- Leaflet Control Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <style>
+        /* Dark Mode for Leaflet Routing Machine - Enhanced */
+        .leaflet-routing-container {
+            background-color: rgba(30, 41, 59, 0.95) !important; /* Slate-800 with opacity */
+            color: #e2e8f0 !important; /* Slate-200 */
+            border: 1px solid rgba(71, 85, 105, 0.5) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+            font-family: 'Inter', sans-serif !important;
+            padding: 10px !important;
+            margin-top: 10px !important;
+            margin-right: 10px !important;
+            width: 340px !important; /* Slightly wider */
+            max-width: 90vw !important; /* Mobile Responsive */
+            backdrop-filter: blur(8px);
+        }
+        
+        /* Hide the default header if it looks messy, or style it */
+        .leaflet-routing-container h2 {
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            margin-bottom: 10px !important;
+            color: #fff !important;
+        }
+
+        .leaflet-routing-alt {
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 5px; /* Space for scrollbar */
+        }
+        
+        /* Custom Scrollbar */
+        .leaflet-routing-alt::-webkit-scrollbar {
+            width: 6px;
+        }
+        .leaflet-routing-alt::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        .leaflet-routing-alt::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+        .leaflet-routing-alt::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Direction Steps */
+        .leaflet-routing-alt table {
+            border-collapse: separate;
+            border-spacing: 0 4px;
+            width: 100%;
+        }
+        .leaflet-routing-alt tr {
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        .leaflet-routing-alt tr:hover {
+            background-color: rgba(51, 65, 85, 0.8) !important; /* Slate-700 */
+            cursor: pointer;
+            transform: translateX(2px);
+        }
+        .leaflet-routing-alt td {
+            padding: 8px 6px !important;
+            border: none !important;
+            font-size: 13px !important;
+            color: #cbd5e1 !important; /* Slate-300 */
+        }
+        
+        /* Inputs */
+        .leaflet-routing-geocoders div {
+            padding: 4px 0 !important;
+        }
+        .leaflet-routing-geocoders input {
+            background-color: #0f172a !important; /* Slate-900 */
+            color: white !important;
+            border: 1px solid #475569 !important;
+            border-radius: 6px !important;
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+            width: 100% !important;
+            transition: border-color 0.2s;
+        }
+        .leaflet-routing-geocoders input:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important; /* Blue-500 */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        .leaflet-routing-geocoders button {
+            background: none !important;
+            border: none !important;
+            color: #94a3b8 !important;
+            font-size: 16px !important;
+            cursor: pointer;
+            margin-right: 5px !important;
+        }
+        .leaflet-routing-geocoders button:hover {
+            color: #ef4444 !important; /* Red for remove */
+        }
+
+        /* Add Waypoint Button */
+        .leaflet-routing-add-waypoint {
+            background-color: #3b82f6 !important; /* Blue-500 */
+            border-radius: 50%;
+            width: 24px !important;
+            height: 24px !important;
+            line-height: 24px !important;
+            margin-top: 4px !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .leaflet-routing-add-waypoint:hover {
+            background-color: #2563eb !important;
+            transform: scale(1.1);
+        }
+        .leaflet-routing-add-waypoint:after {
+            color: white !important;
+            font-size: 18px !important;
+            font-weight: bold;
+            line-height: 22px !important;
+        }
+
+        /* Icons in instructions */
+        .leaflet-routing-icon {
+            background-image: url('https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet.routing.icons.png');
+            opacity: 0.8;
+        }
+        
+        /* Custom Context Menu */
+        .custom-context-menu {
+            position: absolute;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            padding: 5px 0;
+            z-index: 10000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            min-width: 150px;
+        }
+        .custom-context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+        .custom-context-menu-item:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-6">
+    
+    <!-- Navbar -->
+    <nav class="glass-panel mb-8 px-6 py-4 sticky top-4 z-50 shadow-2xl shadow-black/20">
+        <div class="flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-white/10">
+                    <i class="fas fa-network-wired text-white text-xl"></i>
+                </div>
+                <div class="hidden md:block">
+                    <h1 class="text-2xl font-bold text-white tracking-tight">
+                        SmartTraffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI</span>
+                    </h1>
+                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span>System Online</span>
+                        <span class="text-slate-600">|</span>
+                        <span class="text-blue-400 font-medium">Data Lake Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+
+            <!-- Menu Items -->
+            <div id="mobile-menu" class="hidden md:flex w-full md:w-auto flex-col md:flex-row items-center gap-3 mt-4 md:mt-0 transition-all duration-300">
+                <button onclick="showPredictiveModal()" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-purple-500/50 group">
+                    <i class="fas fa-brain text-purple-400 group-hover:text-purple-300 transition-colors"></i> 
+                    <span>Predictive AI</span>
+                </button>
+                
+                <button onclick="showDataLakeStats()" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-blue-500/50 group">
+                    <i class="fas fa-chart-line text-blue-400 group-hover:text-blue-300 transition-colors"></i>
+                    <span>Analytics</span>
+                </button>
+                
+                <div class="h-8 w-px bg-slate-700 mx-1 hidden md:block"></div>
+                
+                <a href="/" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700">
+                    <i class="fas fa-desktop"></i> Monitor
+                </a>
+                
+                <a href="/documentation" class="w-full md:w-auto justify-center px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700" title="Documentation">
+                    <i class="fas fa-book"></i> <span class="md:hidden">Documentation</span>
+                </a>
+                
+                <div class="w-full md:w-auto text-center md:text-right md:ml-2 md:border-l md:border-slate-700 md:pl-4 mt-2 md:mt-0">
+                    <p class="text-sm font-bold text-white" id="current-time">--:--</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider" id="current-date">--/--/----</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="space-y-8 max-w-7xl mx-auto">
+        
+        <!-- Global Aggregate Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Total All Cameras -->
+            <div class="glass-panel p-6 border-l-4 border-indigo-500 bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden">
+                <div class="absolute right-0 top-0 p-4 opacity-10">
+                    <i class="fas fa-globe text-6xl"></i>
+                </div>
+                <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Traffic (All Cameras)</p>
+                <h2 class="text-5xl font-bold text-white mt-2" id="global-total">0</h2>
+                <p class="text-xs text-gray-500 mt-2">Accumulated Count</p>
+            </div>
+
+            <!-- Total Cars -->
+            <div class="glass-panel p-6 border-l-4 border-green-500">
+                <div class="flex justify-between items-start">
+                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Cars</p>
+                    <i class="fas fa-car text-green-500/20 text-2xl"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-white mt-2" id="global-cars">0</h2>
+                <div class="mt-4 w-full bg-slate-700 rounded-full h-1.5">
+                    <div class="bg-green-500 h-1.5 rounded-full transition-all duration-1000" style="width: 0%" id="bar-global-cars"></div>
+                </div>
+                <p class="text-xs text-right text-gray-400 mt-1" id="pct-global-cars">0%</p>
+            </div>
+
+            <!-- Total Motorcycles -->
+            <div class="glass-panel p-6 border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start">
+                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Motorcycles</p>
+                    <i class="fas fa-motorcycle text-yellow-500/20 text-2xl"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-white mt-2" id="global-motors">0</h2>
+                <div class="mt-4 w-full bg-slate-700 rounded-full h-1.5">
+                    <div class="bg-yellow-500 h-1.5 rounded-full transition-all duration-1000" style="width: 0%" id="bar-global-motors"></div>
+                </div>
+                <p class="text-xs text-right text-gray-400 mt-1" id="pct-global-motors">0%</p>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="glass-panel p-4 md:p-6 relative">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-map-marked-alt text-indigo-500"></i> Camera Map (Java)
+            </h2>
+            <div id="map" class="w-full h-[400px] md:h-[600px] rounded-lg z-0 relative bg-slate-800"></div>
+            
+            <!-- Edit Map Button -->
+            <button onclick="toggleEditMode()" id="edit-map-btn" class="absolute top-8 right-8 z-[400] bg-slate-800/90 text-white p-2 rounded-lg border border-slate-600 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 transition-all" title="Edit Map Layout">
+                <i class="fas fa-lock text-gray-400" id="edit-map-icon"></i>
+            </button>
+
+            <!-- Prediction Mode Indicator (Hidden by default) -->
+            <div id="prediction-mode-indicator" class="hidden absolute top-24 left-1/2 transform -translate-x-1/2 z-[1000] bg-slate-900/95 border border-purple-500 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 backdrop-blur-md transition-all duration-300 animate-fadeInDown">
+                <div class="flex items-center gap-3">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                    </span>
+                    <div>
+                        <span class="font-bold text-sm text-purple-200 block leading-none">PREDICTION MODE</span>
+                        <span class="text-[10px] text-purple-400 uppercase tracking-wider">AI Simulation</span>
+                    </div>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="flex flex-col group relative">
+                     <span class="text-[10px] text-gray-500 uppercase">Target Time</span>
+                     <div class="flex items-center gap-2 cursor-pointer hover:text-purple-300 transition-colors" onclick="document.getElementById('quick-predict-time').showPicker()">
+                        <span class="text-xs font-mono text-white group-hover:text-purple-300" id="prediction-time-display">--:--</span>
+                        <i class="fas fa-pencil-alt text-[10px] text-gray-500 group-hover:text-purple-400"></i>
+                     </div>
+                     <input type="datetime-local" id="quick-predict-time" class="absolute opacity-0 w-0 h-0 top-0 left-0" onchange="updatePredictionTime(this.value)">
+                </div>
+                <button onclick="exitPredictionMode()" class="ml-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 border border-red-500/30 rounded-full px-3 py-1 text-xs font-bold transition-all flex items-center gap-2">
+                    <span>EXIT</span>
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Camera Grid -->
+        <div>
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i class="fas fa-video text-blue-500"></i> Connected Cameras
+            </h2>
+            <div id="camera-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Camera Cards will be injected here -->
+                <div class="col-span-full text-center text-gray-500 py-10 animate-pulse">
+                    Loading camera data...
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        });
+
+        // Global Map State
+        let map;
+        let markers = {};
+        let weatherCache = {}; // Cache weather data by sourceId to avoid API spam
+        let isPredictionMode = false;
+        
+        // Edit Mode State
+        let isEditMode = false;
+        let editAuth = null;
+
+        function toggleEditMode() {
+            if (isEditMode) {
+                // Lock Map
+                isEditMode = false;
+                editAuth = null;
+                document.getElementById('edit-map-icon').className = 'fas fa-lock text-gray-400';
+                document.getElementById('edit-map-btn').classList.remove('bg-indigo-600', 'border-indigo-500');
+                document.getElementById('edit-map-btn').classList.add('bg-slate-800/90');
+                
+                // Disable Dragging
+                Object.values(markers).forEach(m => {
+                    if (m.dragging) m.dragging.disable();
+                });
+                
+                alert("Map Layout Locked");
+            } else {
+                // Show Auth Modal
+                document.getElementById('authModal').classList.remove('hidden');
+                document.getElementById('authModal').classList.add('flex');
+                document.getElementById('auth-username').focus();
+            }
+        }
+        
+        function cancelEditAuth() {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('authModal').classList.remove('flex');
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+        }
+        
+        async function authenticateEdit() {
+            const u = document.getElementById('auth-username').value;
+            const p = document.getElementById('auth-password').value;
+            
+            if (!u || !p) return alert("Please enter credentials");
+            
+            const btn = document.querySelector('#authModal button[onclick="authenticateEdit()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/verify_admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const res = await response.json();
+                
+                if (res.status === 'success') {
+                    editAuth = { username: u, password: p };
+                    isEditMode = true;
+                    
+                    // UI Update
+                    document.getElementById('edit-map-icon').className = 'fas fa-lock-open text-white';
+                    document.getElementById('edit-map-btn').classList.remove('bg-slate-800/90');
+                    document.getElementById('edit-map-btn').classList.add('bg-indigo-600', 'border-indigo-500');
+                    
+                    // Enable Dragging
+                    Object.values(markers).forEach(m => {
+                        if (m.dragging) m.dragging.enable();
+                    });
+                    
+                    cancelEditAuth(); // Close modal
+                    alert("Map Unlocked! You can now drag cameras to new locations.");
+                } else {
+                    alert("Authentication Failed: " + res.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Server error during authentication");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function exitPredictionMode() {
+            isPredictionMode = false;
+            document.getElementById('prediction-mode-indicator').classList.add('hidden');
+            
+            // Resume updates
+            fetchDashboardData();
+        }
+
+        // Helper: Fetch Weather
+        async function fetchWeather(lat, lng, sourceId) {
+            // Check cache (valid for 10 minutes)
+            const now = Date.now();
+            if (weatherCache[sourceId] && (now - weatherCache[sourceId].timestamp < 600000)) {
+                return weatherCache[sourceId].data;
+            }
+
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.current_weather) {
+                    const weather = {
+                        temp: data.current_weather.temperature,
+                        code: data.current_weather.weathercode,
+                        wind: data.current_weather.windspeed
+                    };
+                    weatherCache[sourceId] = { timestamp: now, data: weather };
+                    return weather;
+                }
+            } catch (e) {
+                console.error("Weather fetch failed", e);
+            }
+            return null;
+        }
+
+        // Helper: Get Weather Icon/Desc
+        function getWeatherDisplay(code) {
+            // WMO Weather interpretation codes (WW)
+            // 0: Clear sky
+            // 1, 2, 3: Mainly clear, partly cloudy, and overcast
+            // 45, 48: Fog and depositing rime fog
+            // 51, 53, 55: Drizzle: Light, moderate, and dense intensity
+            // 61, 63, 65: Rain: Slight, moderate and heavy intensity
+            // 80, 81, 82: Rain showers: Slight, moderate, and violent
+            // 95, 96, 99: Thunderstorm: Slight or heavy
+            
+            let icon = "☁️";
+            let desc = "Cloudy";
+            
+            if (code === 0) { icon = "☀️"; desc = "Cerah"; }
+            else if (code <= 3) { icon = "⛅"; desc = "Berawan"; }
+            else if (code <= 48) { icon = "🌫️"; desc = "Berkabut"; }
+            else if (code <= 67) { icon = "🌧️"; desc = "Hujan"; }
+            else if (code <= 82) { icon = "🌦️"; desc = "Hujan Ringan"; }
+            else if (code >= 95) { icon = "⛈️"; desc = "Badai Petir"; }
+            
+            return { icon, desc };
+        }
+
+        function getWeatherHTML(sourceId) {
+            const cached = weatherCache[sourceId];
+            const now = Date.now();
+            
+            if (cached && (now - cached.timestamp < 600000)) {
+                const w = cached.data;
+                const { icon, desc } = getWeatherDisplay(w.code);
+                return `
+                    <div id="weather-${sourceId}" style="background:#f0f9ff; padding:6px; border-radius:6px; margin-bottom:8px; border:1px solid #bae6fd;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">${icon}</span>
+                            <div>
+                                <div style="font-weight:bold; font-size:12px;">${desc}</div>
+                                <div style="font-size:11px; color:#555;">${w.temp}°C | Wind: ${w.wind} km/h</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div id="weather-${sourceId}" style="background:#f0f9ff; padding:6px; border-radius:6px; margin-bottom:8px; border:1px solid #bae6fd;">
+                    <div style="font-size:11px; color:#555;">Loading Weather...</div>
+                </div>
+            `;
+        }
+
+        // Init Map
+        async function initMap() {
+            // Center on Bandung
+            map = L.map('map').setView([-6.9175, 107.6191], 12);
+            
+            // Standard Traffic/Street Tiles (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Fetch Sources for coordinates
+            try {
+                const response = await fetch('/api/sources');
+                const sources = await response.json();
+                
+                sources.forEach(source => {
+                    if (source.lat && source.lng) {
+                        // Use a draggable Marker with a custom circular divIcon
+                        const dotSize = 20; // enlarged size
+                        const color = '#6366f1';
+                        const iconHtml = `<div style="width:${dotSize}px;height:${dotSize}px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25)"></div>`;
+                        const marker = L.marker([parseFloat(source.lat), parseFloat(source.lng)], {
+                            draggable: false, // Default locked
+                            icon: L.divIcon({ className: '', html: iconHtml, iconSize: [dotSize, dotSize], iconAnchor: [dotSize/2, dotSize/2] })
+                        }).addTo(map);
+                        
+                        // Store lat/lng in marker options for later use
+                        marker.options.lat = parseFloat(source.lat);
+                        marker.options.lng = parseFloat(source.lng);
+                        marker.options.sourceId = source.id;
+
+                        marker.bindPopup(`<div style="color:black"><b>${source.name}</b><br>Loading stats...</div>`);
+                        
+                        // Fetch weather when popup opens
+                        marker.on('popupopen', async () => {
+                            // Trigger fetch if needed
+                            if (!weatherCache[source.id] || (Date.now() - weatherCache[source.id].timestamp >= 600000)) {
+                                await fetchWeather(source.lat, source.lng, source.id);
+                                // Update DOM immediately after fetch
+                                const weatherDiv = document.getElementById(`weather-${source.id}`);
+                                if (weatherDiv) {
+                                    weatherDiv.outerHTML = getWeatherHTML(source.id);
+                                }
+                            }
+                        });
+                        
+                        // Save new coordinates on drag end
+                        marker.on('dragend', async (e) => {
+                            if (!isEditMode || !editAuth) return; // Should not happen if draggable is false, but safe guard
+                            
+                            const ll = e.target.getLatLng();
+                            e.target.options.lat = ll.lat;
+                            e.target.options.lng = ll.lng;
+                            try {
+                                const response = await fetch('/api/edit_camera', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        id: source.id,
+                                        lat: ll.lat,
+                                        lng: ll.lng,
+                                        username: editAuth.username,
+                                        password: editAuth.password
+                                    })
+                                });
+                                const res = await response.json();
+                                if (res.status === 'success') {
+                                    e.target.bindPopup(`<div style="color:black"><b>${source.name}</b><br>Koordinat disimpan ✔️</div>`).openPopup();
+                                } else {
+                                    alert("Gagal menyimpan: " + res.message);
+                                    // Revert? For now just alert.
+                                }
+                            } catch (err) {
+                                console.error('Failed to save coordinates', err);
+                                alert("Gagal menghubungi server");
+                            }
+                        });
+
+                        markers[source.id] = marker;
+                    }
+                });
+            } catch (e) { console.error("Map init error", e); }
+
+            // Custom Context Menu for Routing
+            map.on('contextmenu', function(e) {
+                const existingMenu = document.querySelector('.custom-context-menu');
+                if (existingMenu) existingMenu.remove();
+
+                const menu = document.createElement('div');
+                menu.className = 'custom-context-menu';
+                
+                const containerPoint = map.latLngToContainerPoint(e.latlng);
+                menu.style.left = containerPoint.x + 'px';
+                menu.style.top = containerPoint.y + 'px';
+
+                // Option: Set Start Point
+                const startItem = document.createElement('div');
+                startItem.className = 'custom-context-menu-item';
+                startItem.innerHTML = '<i class="fas fa-map-marker-alt text-green-500 mr-2"></i> Set Titik Awal';
+                startItem.onclick = () => {
+                    setStartPoint(e.latlng);
+                    menu.remove();
+                };
+
+                // Option: Set End Point
+                const endItem = document.createElement('div');
+                endItem.className = 'custom-context-menu-item';
+                endItem.innerHTML = '<i class="fas fa-flag-checkered text-red-500 mr-2"></i> Set Titik Akhir';
+                endItem.onclick = () => {
+                    setEndPoint(e.latlng);
+                    menu.remove();
+                };
+                
+                // Option: Clear Route
+                const clearItem = document.createElement('div');
+                clearItem.className = 'custom-context-menu-item';
+                clearItem.innerHTML = '<i class="fas fa-trash text-gray-400 mr-2"></i> Hapus Rute';
+                clearItem.onclick = () => {
+                    clearRoute();
+                    menu.remove();
+                };
+
+                menu.appendChild(startItem);
+                menu.appendChild(endItem);
+                
+                if (typeof manualStartPoint !== 'undefined' && (manualStartPoint || manualEndPoint || routingControl)) {
+                    menu.appendChild(clearItem);
+                }
+
+                map.getContainer().appendChild(menu);
+            });
+
+            map.on('click dragstart zoomstart', function() {
+                const existingMenu = document.querySelector('.custom-context-menu');
+                if (existingMenu) existingMenu.remove();
+            });
+        }
+        
+        // Initialize Map
+        initMap();
+
+        // Update Time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('current-date').innerText = now.toLocaleDateString('id-ID');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Fetch Data
+        async function fetchDashboardData() {
+            if (isPredictionMode) return;
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                renderDashboard(data);
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            }
+        }
+
+        // Helper: update marker color (for divIcon-based markers)
+        function setMarkerColor(marker, color) {
+            const size = 20;
+            const html = `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25)"></div>`;
+            marker.setIcon(L.divIcon({ className: '', html: html, iconSize: [size, size], iconAnchor: [size/2, size/2] }));
+        }
+
+        function renderDashboard(data) {
+            // 1. Update Global Stats
+            const total = data.global_total.accumulated_count;
+            const cars = data.global_total.cars;
+            const motors = data.global_total.motorcycles;
+
+            document.getElementById('global-total').innerText = total.toLocaleString();
+            document.getElementById('global-cars').innerText = cars.toLocaleString();
+            document.getElementById('global-motors').innerText = motors.toLocaleString();
+
+            // Bars
+            const carPct = total > 0 ? (cars / total) * 100 : 0;
+            const motorPct = total > 0 ? (motors / total) * 100 : 0;
+
+            document.getElementById('bar-global-cars').style.width = `${carPct}%`;
+            document.getElementById('pct-global-cars').innerText = `${Math.round(carPct)}%`;
+            
+            document.getElementById('bar-global-motors').style.width = `${motorPct}%`;
+            document.getElementById('pct-global-motors').innerText = `${Math.round(motorPct)}%`;
+            
+            // 1b. Update Map Markers
+            Object.keys(data.sources).forEach(sourceId => {
+                 if (markers[sourceId]) {
+                     const s = data.sources[sourceId];
+                     
+                     // Use Current Count for Map Density to match Camera Cards
+                     let congestionStatus = "UNKNOWN";
+                     let congestionColor = "#94a3b8"; // Default Gray
+                     let trafficValue = s.current_count || 0;
+                     let isOffline = (s.status === 'offline');
+                     
+                     // Check if stale data (older than 30s)
+                     const nowTs = Date.now() / 1000;
+                     if (s.last_update && (nowTs - s.last_update > 30)) {
+                        isOffline = true;
+                     }
+
+                     if (isOffline) {
+                         congestionStatus = "OFFLINE";
+                         congestionColor = "#64748b"; // Slate 500
+                     } else if (trafficValue <= 15) {
+                         congestionStatus = "SEPI";
+                         congestionColor = "#22c55e"; // Green
+                     } else if (trafficValue <= 35) {
+                         congestionStatus = "SEDANG";
+                         congestionColor = "#eab308"; // Yellow
+                     } else {
+                         congestionStatus = "RAMAI";
+                         congestionColor = "#ef4444"; // Red
+                     }
+                     
+                     // Update Marker Style (Color)
+                    setMarkerColor(markers[sourceId], congestionColor);
+
+                     // Store status for routing
+                     markers[sourceId].options.congestionStatus = congestionStatus;
+                     markers[sourceId].options.congestionLevel = trafficValue;
+
+                     markers[sourceId].setPopupContent(`
+                        <div style="color:#333; font-family:sans-serif; min-width:160px;">
+                            <div style="font-weight:bold; color:#4f46e5; margin-bottom:4px; font-size:14px;">${s.name}</div>
+                            
+                            <!-- Weather Section -->
+                            ${getWeatherHTML(sourceId)}
+
+                            <div style="margin-bottom:6px;">
+                                <span style="background-color:${congestionColor}; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">${congestionStatus}</span>
+                            </div>
+                            <div style="font-size:12px; line-height:1.4;">
+                                <div>Current Density: <b>${trafficValue}</b></div>
+                                <div style="font-size:11px; color:#555; margin-bottom:4px;">
+                                    <span>🚗 ${s.current_class_counts['0'] || 0}</span>
+                                    <span style="margin-left:8px;">🏍️ ${s.current_class_counts['1'] || 0}</span>
+                                </div>
+                                <div style="margin-top:4px; border-top:1px solid #eee; padding-top:4px;">
+                                    <div>Total: <b>${s.accumulated_count}</b></div>
+                                    <div style="display:flex; justify-content:space-between; font-size:11px; color:#555;">
+                                        <span>🚗 ${s.accumulated_class_counts['0'] || s.accumulated_class_counts['2'] || 0}</span>
+                                        <span>🏍️ ${s.accumulated_class_counts['1'] || s.accumulated_class_counts['3'] || 0}</span>
+                                    </div>
+                                </div>
+                                <button onclick="getDirections(${s.lat || markers[sourceId].options.lat}, ${s.lng || markers[sourceId].options.lng})" style="margin-top:8px; width:100%; background-color:#4f46e5; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; gap:4px;">
+                                    <i class="fas fa-directions"></i> Get Directions
+                                </button>
+                            </div>
+                        </div>
+                     `);
+                 }
+            });
+
+            // 2. Render Camera Grid
+            const grid = document.getElementById('camera-grid');
+            grid.innerHTML = '';
+
+            // Use data.sources which is a dictionary {id: stats}
+            // We also need the list of cameras to get names and active status
+            // Wait, data.sources in api/stats contains the keys (ids) and values (stats)
+            // But we need the list of sources to know if they are "Active" in the monitor.
+            // Actually, we can fetch /api/sources to get names if they are not in stats, 
+            // but api/stats sources usually contains the name inside the stats object (see camera.py init)
+            
+            // Let's rely on data.sources
+            const sortedSourceIds = Object.keys(data.sources).sort();
+
+            if (sortedSourceIds.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">No cameras connected.</div>';
+                return;
+            }
+
+            sortedSourceIds.forEach(sourceId => {
+                const stats = data.sources[sourceId];
+                const isMonitorActive = (sourceId === data.active_source_id);
+                
+                const card = document.createElement('div');
+                card.className = `glass-panel p-5 hover:bg-slate-800/80 transition-all duration-300 border-t-4 ${isMonitorActive ? 'border-t-blue-500 shadow-lg shadow-blue-900/20' : 'border-t-slate-600'}`;
+                
+                // Calculate percentages for this camera
+                const cTotal = stats.accumulated_count;
+                const cCars = stats.accumulated_class_counts['0'] || stats.accumulated_class_counts['2'] || 0; // 0 is Car
+                const cMotors = stats.accumulated_class_counts['1'] || stats.accumulated_class_counts['3'] || 0; // 1 is Motorcycle
+                
+                // Determine Status
+                let isOffline = (stats.status === 'offline');
+                const nowTs = Date.now() / 1000;
+                if (stats.last_update && (nowTs - stats.last_update > 30)) {
+                    isOffline = true;
+                }
+                
+                let statusHtml = `
+                    <div class="flex items-center gap-2">
+                        <span class="live-indicator"></span>
+                        <span class="text-xs text-green-400">Live Processing</span>
+                    </div>
+                `;
+                
+                if (isOffline) {
+                     statusHtml = `
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span class="text-xs text-red-400">Offline / Connection Failed</span>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center ${isOffline ? 'bg-red-900/50 text-red-400' : (isMonitorActive ? 'bg-blue-600 text-white' : 'bg-slate-700 text-gray-400')}">
+                                <i class="fas fa-video${isOffline ? '-slash' : ''}"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-white font-bold truncate max-w-[150px]" title="${stats.name}">${stats.name}</h3>
+                                ${statusHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-slate-900/50 p-2 rounded text-center">
+                            <div class="text-xs text-gray-400 uppercase">Total</div>
+                            <div class="text-xl font-bold text-white">${cTotal.toLocaleString()}</div>
+                        </div>
+                        <div class="bg-slate-900/50 p-2 rounded text-center">
+                            <div class="text-xs text-gray-400 uppercase">Current</div>
+                            <div class="text-xl font-bold text-blue-400">${stats.current_count || 0}</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Cars</span>
+                            <span>${cCars}</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-1">
+                            <div class="bg-green-500 h-1 rounded-full" style="width: ${cTotal ? (cCars/cTotal)*100 : 0}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>Motorcycles</span>
+                            <span>${cMotors}</span>
+                        </div>
+                        <div class="w-full bg-slate-700 rounded-full h-1">
+                            <div class="bg-yellow-500 h-1 rounded-full" style="width: ${cTotal ? (cMotors/cTotal)*100 : 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="switchToCamera('${sourceId}')" class="flex-1 bg-slate-700 hover:bg-blue-600 text-white py-2 rounded text-sm transition-colors">
+                            <i class="fas fa-video mr-2"></i> Monitor
+                        </button>
+                        <button onclick="viewOnMap('${sourceId}')" class="flex-1 bg-slate-700 hover:bg-indigo-600 text-white py-2 rounded text-sm transition-colors ${!markers[sourceId] ? 'opacity-50 cursor-not-allowed' : ''}" ${!markers[sourceId] ? 'disabled' : ''} title="${!markers[sourceId] ? 'No coordinates set' : 'View on Map'}">
+                            <i class="fas fa-map-marked-alt mr-2"></i> Map
+                        </button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        async function switchToCamera(id) {
+            // First switch source API
+            try {
+                await fetch('/api/switch_source', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                // Then redirect to monitor
+                window.location.href = '/';
+            } catch (e) {
+                alert("Failed to switch camera");
+            }
+        }
+
+        function viewOnMap(sourceId) {
+            if (markers[sourceId]) {
+                const marker = markers[sourceId];
+                // Fly to location with zoom level 15
+                map.flyTo(marker.getLatLng(), 15, {
+                    animate: true,
+                    duration: 1.5
+                });
+                
+                // Open popup after a short delay to allow movement
+                setTimeout(() => {
+                    marker.openPopup();
+                }, 1500);
+
+                // Scroll to map
+                document.getElementById('map').scrollIntoView({behavior: 'smooth', block: 'center'});
+            } else {
+                alert("Location not set for this camera. Please edit camera details to add coordinates.");
+            }
+        }
+
+        let routingControl = null;
+        
+        // Manual Routing State
+        let manualStartPoint = null;
+        let manualEndPoint = null;
+        let manualStartMarker = null;
+        let manualEndMarker = null;
+
+        function startRouting(startLat, startLng, destLat, destLng) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            try {
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(startLat, startLng),
+                        L.latLng(destLat, destLng)
+                    ],
+                    routeWhileDragging: true,
+                    geocoder: L.Control.Geocoder.nominatim(),
+                    showAlternatives: true,
+                    createMarker: function(i, wp, nWps) {
+                        let iconHtml, anchor;
+                        if (i === 0) {
+                            // Start: Blue "A"
+                            iconHtml = '<div style="background-color:#3b82f6; width:32px; height:32px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3);">A</div>';
+                            anchor = [16, 16];
+                        } else if (i === nWps - 1) {
+                            // End: Red Flag
+                            iconHtml = '<div style="background-color:#ef4444; width:32px; height:32px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-size:14px; box-shadow:0 4px 6px rgba(0,0,0,0.3);"><i class="fas fa-flag-checkered"></i></div>';
+                            anchor = [16, 16];
+                        } else {
+                            // Via: Yellow Dot
+                            iconHtml = '<div style="background-color:#eab308; width:16px; height:16px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>';
+                            anchor = [8, 8];
+                        }
+                        return L.marker(wp.latLng, {
+                            draggable: true,
+                            icon: L.divIcon({ className: '', html: iconHtml, iconSize: [32, 32], iconAnchor: anchor })
+                        });
+                    },
+                    lineOptions: {
+                        styles: [{color: '#3b82f6', opacity: 0.8, weight: 6}]
+                    },
+                    altLineOptions: {
+                        styles: [
+                            {color: 'black', opacity: 0.15, weight: 9},
+                            {color: 'white', opacity: 0.8, weight: 6},
+                            {color: 'gray', opacity: 0.5, weight: 2}
+                        ]
+                    }
+                })
+                .on('routesfound', function(e) {
+                      const routes = e.routes;
+                      let comparisonHTML = '<div style="font-size:14px; font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:4px;">Analisis Lalu Lintas</div>';
+                      let bestRouteIndex = 0;
+                      let minTotalTime = Infinity;
+
+                      // Identify congested zones from markers
+                      const congestedZones = [];
+                      for (let id in markers) {
+                          const status = markers[id].options.congestionStatus;
+                          if (status === 'RAMAI' || status === 'SEDANG') {
+                              const density = markers[id].options.congestionLevel || (status === 'RAMAI' ? 20 : 10);
+                              
+                              let delayMinutes;
+                              if (status === 'RAMAI') {
+                                  // Macet Parah: Delay signifikan
+                                  delayMinutes = Math.max(5, Math.round(density / 5));
+                              } else { 
+                                  // Padat Merayap (Sedang): Delay moderat
+                                  delayMinutes = Math.max(2, Math.round(density / 8)); 
+                              }
+
+                              congestedZones.push({
+                                  latlng: markers[id].getLatLng(),
+                                  delay: delayMinutes,
+                                  name: markers[id].getPopup().getContent().match(/<b>(.*?)<\/b>/)?.[1] || 'Unknown Area',
+                                  status: status // Track status for UI
+                              });
+                          }
+                      }
+ 
+                      // Check each route
+                      routes.forEach((route, i) => {
+                          let routeDelay = 0;
+                          let congestedAreas = new Set();
+                          
+                          if (congestedZones.length > 0) {
+                              const routeCoords = route.coordinates;
+                              for (let j = 0; j < routeCoords.length; j += 10) { 
+                                  const pt = L.latLng(routeCoords[j]);
+                                  for (let zone of congestedZones) {
+                                      if (pt.distanceTo(zone.latlng) < 200) {
+                                          if (!congestedAreas.has(zone.name)) {
+                                              congestedAreas.add(zone.name);
+                                              routeDelay += zone.delay;
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          
+                          // Calculate Total Time
+                          const baseTimeMinutes = Math.round(route.summary.totalTime / 60);
+                          const totalTimeMinutes = baseTimeMinutes + routeDelay;
+                          
+                          route.summary.totalTime = totalTimeMinutes * 60; 
+
+                          const color = routeDelay > 0 ? '#ef4444' : '#10b981';
+                          const icon = routeDelay > 0 ? 'fa-traffic-light' : 'fa-road';
+                          route.isCongested = routeDelay > 0;
+                          
+                          comparisonHTML += `
+                            <div style="margin-bottom:8px; padding:8px; background:rgba(255,255,255,0.05); rounded:4px; border-left:4px solid ${color};">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-weight:bold;">Rute ${i+1} ${i===0 ? '(Utama)' : '(Alt)'}</span>
+                                    <span style="color:${color};"><i class="fas ${icon}"></i></span>
+                                </div>
+                                <div style="font-size:12px; margin-top:4px;">
+                                    <div>Estimasi Normal: ${baseTimeMinutes} mnt</div>
+                                    ${routeDelay > 0 ? `<div style="color:#f87171; font-weight:bold;">+${routeDelay} mnt (Kepadatan di ${Array.from(congestedAreas).join(', ')})</div>` : ''}
+                                    <div style="font-size:13px; font-weight:bold; margin-top:2px;">Total: ${totalTimeMinutes} mnt</div>
+                                </div>
+                            </div>
+                          `;
+
+                          if (totalTimeMinutes < minTotalTime) {
+                              minTotalTime = totalTimeMinutes;
+                              bestRouteIndex = i;
+                          }
+                      });
+
+                      // Recommendation
+                      if (bestRouteIndex !== 0) {
+                          comparisonHTML += `
+                            <div style="margin-top:8px; padding:8px; background:#10b981; color:white; border-radius:4px; font-size:12px; font-weight:bold; animation: pulse 2s infinite;">
+                                <i class="fas fa-lightbulb"></i> Rekomendasi: Pilih Rute ${bestRouteIndex+1} untuk hemat waktu!
+                            </div>
+                          `;
+                      } else if (minTotalTime === Infinity) {
+                           // No valid routes
+                      } else {
+                          comparisonHTML += `
+                            <div style="margin-top:8px; padding:8px; background:#3b82f6; color:white; border-radius:4px; font-size:12px; font-weight:bold;">
+                                <i class="fas fa-check"></i> Rute Utama adalah pilihan terbaik.
+                            </div>
+                          `;
+                      }
+ 
+                      const existingAlert = document.getElementById('routing-alert');
+                      if (existingAlert) existingAlert.remove();
+ 
+                      const alertDiv = document.createElement('div');
+                      alertDiv.id = 'routing-alert';
+                      alertDiv.style.cssText = 'position:absolute; top:20px; right:20px; z-index:10000; padding:15px; border-radius:12px; background:#1e293b; color:white; border:1px solid #475569; box-shadow:0 8px 20px rgba(0,0,0,0.5); min-width:280px; max-width:320px; font-family:sans-serif; animation: slideInRight 0.5s;';
+                      
+                      alertDiv.innerHTML = comparisonHTML;
+                          
+                      const closeBtn = document.createElement('div');
+                      closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                      closeBtn.style.cssText = 'position:absolute; top:10px; right:10px; cursor:pointer; opacity:0.6; font-size:14px;';
+                      closeBtn.onclick = () => alertDiv.remove();
+                      alertDiv.appendChild(closeBtn);
+
+                      document.getElementById('map').parentElement.style.position = 'relative'; 
+                      document.getElementById('map').appendChild(alertDiv);
+                  })
+                  .on('routeselected', function(e) {
+                       const route = e.route;
+                       const control = this;
+                       setTimeout(() => {
+                           const line = control._line;
+                           if (line) {
+                               if (route.isCongested) {
+                                   line.eachLayer(l => l.setStyle({color: '#ef4444'}));
+                               } else {
+                                   line.eachLayer(l => l.setStyle({color: '#3b82f6'}));
+                               }
+                           }
+                       }, 50);
+                  })
+                  .addTo(map);
+
+             // Force update LRM container text
+             routingControl.on('routesfound', function(e) {
+                 setTimeout(() => {
+                     const containers = document.querySelectorAll('.leaflet-routing-alt h2, .leaflet-routing-info h2, .leaflet-routing-alt-time');
+                     containers.forEach(el => {
+                         if (el.innerText.includes('min')) {
+                             if (!el.innerText.includes('Traffic')) {
+                                  el.innerHTML += ' <span style="color:#ef4444; font-size:0.8em;">(inc. Traffic)</span>';
+                             }
+                         }
+                     });
+                 }, 500);
+             });
+
+            } catch (e) {
+                console.error("Routing setup failed:", e);
+            }
+        }
+
+        function getDirections(destLat, destLng) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    startRouting(position.coords.latitude, position.coords.longitude, destLat, destLng);
+                }, () => {
+                    alert("Unable to retrieve your location for directions.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function setStartPoint(latlng) {
+            manualStartPoint = latlng;
+            if (manualStartMarker) map.removeLayer(manualStartMarker);
+            
+            if (routingControl) {
+                 map.removeControl(routingControl);
+                 routingControl = null;
+                 // Also clear end marker if we are restarting? 
+                 // No, user might want to keep end point.
+            }
+            
+            manualStartMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background-color:#10b981; width:24px; height:24px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; box-shadow:0 4px 6px rgba(0,0,0,0.3);">A</div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                })
+            }).addTo(map);
+            
+            checkAndRoute();
+        }
+
+        function setEndPoint(latlng) {
+            manualEndPoint = latlng;
+            if (manualEndMarker) map.removeLayer(manualEndMarker);
+            
+            if (routingControl) {
+                 map.removeControl(routingControl);
+                 routingControl = null;
+            }
+
+            manualEndMarker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background-color:#ef4444; width:24px; height:24px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; box-shadow:0 4px 6px rgba(0,0,0,0.3);"><i class="fas fa-flag"></i></div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                })
+            }).addTo(map);
+            
+            checkAndRoute();
+        }
+
+        function checkAndRoute() {
+            if (manualStartPoint && manualEndPoint) {
+                if (manualStartMarker) map.removeLayer(manualStartMarker);
+                if (manualEndMarker) map.removeLayer(manualEndMarker);
+                manualStartMarker = null;
+                manualEndMarker = null;
+                
+                startRouting(manualStartPoint.lat, manualStartPoint.lng, manualEndPoint.lat, manualEndPoint.lng);
+                
+                manualStartPoint = null;
+                manualEndPoint = null;
+            }
+        }
+
+        function clearRoute() {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+            if (manualStartMarker) {
+                map.removeLayer(manualStartMarker);
+                manualStartMarker = null;
+            }
+            if (manualEndMarker) {
+                map.removeLayer(manualEndMarker);
+                manualEndMarker = null;
+            }
+            manualStartPoint = null;
+            manualEndPoint = null;
+            
+            const alertDiv = document.getElementById('routing-alert');
+            if (alertDiv) alertDiv.remove();
+        }
+
+        // Poll every 10 seconds
+        window.dashboardInterval = setInterval(fetchDashboardData, 10000);
+        fetchDashboardData();
+
+    </script>
+
+    <!-- Predictive Analytics Modal -->
+    <div id="predictiveModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[9999] backdrop-blur-sm transition-all duration-300 p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-lg shadow-2xl animate-scaleIn max-h-[90vh] overflow-y-auto custom-scrollbar">
+            
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-brain text-purple-500"></i> AI Traffic Prediction
+                </h2>
+                <button onclick="document.getElementById('predictiveModal').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2 font-medium">Select Future Date & Time</label>
+                    <div class="relative">
+                        <input type="datetime-local" id="predictTime" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors [color-scheme:dark]">
+                        <i class="fas fa-calendar-alt absolute right-4 top-3.5 text-gray-500 cursor-pointer hover:text-white transition-colors" onclick="document.getElementById('predictTime').showPicker()"></i>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle mr-1"></i> Prediction is based on historical patterns (Day of Week + Hour).</p>
+                </div>
+                
+                <button onclick="runPrediction()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-purple-500/20 transition-all transform hover:scale-[1.02]">
+                    <i class="fas fa-magic mr-2"></i> Generate Prediction
+                </button>
+                
+                <!-- Result Section -->
+                <div id="predictionResult" class="hidden pt-4 border-t border-slate-800 animate-fadeIn">
+                    <h3 class="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">Prediction Results per Location</h3>
+                    <div id="predictionList" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal for Map Edit -->
+    <div id="authModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[9999] backdrop-blur-sm p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-sm shadow-2xl animate-scaleIn">
+            <div class="p-5 border-b border-slate-800">
+                <h3 class="text-lg font-bold text-white"><i class="fas fa-user-shield mr-2 text-indigo-500"></i> Admin Access</h3>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase mb-1">Username</label>
+                    <input type="text" id="auth-username" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase mb-1">Password</label>
+                    <input type="password" id="auth-password" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="cancelEditAuth()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-2 rounded transition-colors">Cancel</button>
+                    <button onclick="authenticateEdit()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded transition-colors font-bold">Unlock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPredictiveModal() {
+            document.getElementById('predictiveModal').classList.remove('hidden');
+            document.getElementById('predictiveModal').classList.add('flex');
+            
+            // Set default time to tomorrow same time
+            const now = new Date();
+            now.setDate(now.getDate() + 1);
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('predictTime').value = now.toISOString().slice(0, 16);
+            
+            document.getElementById('predictionResult').classList.add('hidden');
+        }
+        
+        function updatePredictionTime(val) {
+            if (!val) return;
+            document.getElementById('predictTime').value = val;
+            runPrediction();
+        }
+
+        async function runPrediction() {
+            const timeVal = document.getElementById('predictTime').value;
+            if (!timeVal) return alert("Please select a date and time");
+            
+            // Format YYYY-MM-DD HH:MM -> YYYY-MM-DD HH:MM
+            const formattedTime = timeVal.replace('T', ' ');
+            
+            const btn = document.querySelector('button[onclick="runPrediction()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            btn.disabled = true;
+            
+            // Indicator Loading State
+            const indicatorTime = document.getElementById('prediction-time-display');
+            const originalIndicatorText = indicatorTime.innerText;
+            if (isPredictionMode) {
+                 indicatorTime.innerHTML = '<i class="fas fa-sync fa-spin text-purple-400"></i>';
+            }
+            
+            try {
+                const response = await fetch('/api/predict_traffic', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ target_time: formattedTime })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const list = document.getElementById('predictionList');
+                    list.innerHTML = '';
+                    
+                    if (data.predictions && data.predictions.length > 0) {
+                        data.predictions.forEach(pred => {
+                            const item = `
+                                <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover:bg-slate-800 transition-colors">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-400">
+                                                <i class="fas fa-video"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-white text-sm">${pred.camera_name}</p>
+                                                <p class="text-xs text-gray-500">${pred.vehicle_count} vehicles/hr</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-bold ${pred.status_color} text-sm">${pred.traffic_status}</p>
+                                            <div class="flex items-center justify-end gap-1 mt-1">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                                <p class="text-[10px] text-gray-500">High Confidence</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Recommendation / Decision Section -->
+                                    <div class="bg-slate-900/50 rounded p-3 border border-slate-700/50 flex gap-3 items-start">
+                                        <div class="mt-0.5 text-indigo-400">
+                                            <i class="${pred.action_icon}"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-400 uppercase font-semibold mb-0.5"><i class="fas fa-robot mr-1"></i>AI Decision Support</p>
+                                            <p class="text-xs text-gray-300 leading-relaxed">${pred.recommendation}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            list.innerHTML += item;
+                        });
+                    } else {
+                         list.innerHTML = '<p class="text-center text-gray-500 py-4">No prediction data available</p>';
+                    }
+                    
+                    document.getElementById('predictionResult').classList.remove('hidden');
+
+                    // Switch to Map View
+                    isPredictionMode = true;
+                    if (data.predictions && data.predictions.length > 0) {
+                        data.predictions.forEach(pred => {
+                            if (markers[pred.camera_id]) {
+                                const marker = markers[pred.camera_id];
+                                let color = '#22c55e';
+                                if (pred.traffic_status === 'MACET PARAH') color = '#dc2626';
+                                else if (pred.traffic_status === 'RAMAI') color = '#ef4444';
+                                else if (pred.traffic_status === 'SEDANG') color = '#eab308';
+                                
+                                setMarkerColor(marker, color);
+                                
+                                // Update Marker Options for Smart Routing (Decision Support)
+                                marker.options.congestionStatus = pred.traffic_status;
+                                marker.options.congestionLevel = pred.vehicle_count;
+
+                                marker.setPopupContent(`
+                                    <div style="color:#333; font-family:sans-serif; min-width:180px;">
+                                        <div style="background:${color}; color:white; padding:4px 8px; border-radius:4px 4px 0 0; font-weight:bold; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                                            <span><i class="fas fa-magic mr-1"></i> PREDICTION</span>
+                                            <span>${pred.vehicle_count} v/h</span>
+                                        </div>
+                                        <div style="padding:8px;">
+                                            <div style="font-weight:bold; color:#4f46e5; margin-bottom:4px; font-size:14px;">${pred.camera_name}</div>
+                                            <div style="font-size:11px; color:#555; margin-bottom:6px;">
+                                                Status: <b style="color:${color}">${pred.traffic_status}</b>
+                                            </div>
+                                            <div style="background:#f1f5f9; padding:6px; border-radius:4px; border-left:3px solid #6366f1;">
+                                                <div style="font-size:10px; color:#64748b; font-weight:bold; margin-bottom:2px;">AI RECOMMENDATION</div>
+                                                <div style="font-size:11px; line-height:1.3; color:#334155;">${pred.recommendation}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `);
+                            }
+                        });
+                    }
+
+                    document.getElementById('prediction-time-display').innerText = formattedTime;
+                    document.getElementById('prediction-mode-indicator').classList.remove('hidden');
+                    document.getElementById('predictiveModal').classList.add('hidden');
+                    document.getElementById('predictiveModal').classList.remove('flex');
+                    document.getElementById('map').scrollIntoView({behavior: 'smooth', block: 'center'});
+
+                } else {
+                    alert('Error: ' + data.message);
+                    if (isPredictionMode) indicatorTime.innerText = originalIndicatorText;
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Connection failed');
+                if (isPredictionMode) indicatorTime.innerText = originalIndicatorText;
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+    <!-- Data Lake Modal -->
+    <div id="datalakeModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[9999] backdrop-blur-sm transition-all duration-300">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl mx-4 shadow-2xl flex flex-col max-h-[85vh] animate-scaleIn">
+            
+            <!-- Fixed Header -->
+            <div class="p-5 border-b border-slate-800 shrink-0 bg-slate-900 rounded-t-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                            <i class="fas fa-server text-indigo-400"></i>
+                        </div>
+                        Historical Analytics
+                    </h2>
+                    <button onclick="document.getElementById('datalakeModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-gray-400 hover:text-white flex items-center justify-center transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row md:items-end gap-3">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-400 mb-1.5 font-medium ml-1">SELECT PARTITION DATE</label>
+                        <input type="date" id="historyDate" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white w-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors shadow-inner">
+                    </div>
+                    <button onclick="fetchDataLakeStats()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 h-[38px] flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i> Analyze
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div id="datalakeContent" class="p-5 overflow-y-auto flex-1 custom-scrollbar bg-slate-900/50">
+                <div class="flex flex-col items-center justify-center h-full text-gray-500 py-10">
+                    <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4">
+                        <i class="fas fa-calendar-day text-2xl text-slate-600"></i>
+                    </div>
+                    <p class="text-sm font-medium">Select a date to view historical insights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Lake Logic
+        function showDataLakeStats() {
+            document.getElementById('datalakeModal').classList.remove('hidden');
+            document.getElementById('datalakeModal').classList.add('flex');
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('historyDate').value = today;
+        }
+
+        async function fetchDataLakeStats() {
+            const date = document.getElementById('historyDate').value;
+            const container = document.getElementById('datalakeContent');
+            
+            container.innerHTML = '<div class="text-center text-indigo-400 py-8"><i class="fas fa-circle-notch fa-spin text-2xl"></i><br>Querying Data Lake...</div>';
+            
+            try {
+                const res = await fetch(`/api/datalake/stats?date=${date}`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    container.innerHTML = `<div class="text-center text-red-400 py-8"><i class="fas fa-exclamation-triangle mb-2"></i><br>${data.message || data.error}</div>`;
+                    return;
+                }
+                
+                let html = `
+                    <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="bg-slate-800/50 p-3 rounded-lg text-center border border-slate-700/50">
+                            <div class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total Vehicles</div>
+                            <div class="text-xl font-bold text-white mt-1">${data.total_vehicles.toLocaleString()}</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg text-center border border-slate-700/50">
+                            <div class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Active Cameras</div>
+                            <div class="text-xl font-bold text-indigo-400 mt-1">${Object.keys(data.by_camera).length}</div>
+                        </div>
+                        <div class="bg-slate-800/50 p-3 rounded-lg text-center border border-slate-700/50">
+                            <div class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Date</div>
+                            <div class="text-lg font-bold text-gray-200 mt-1">${data.date}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-300 flex items-center gap-2">
+                            <i class="fas fa-list-ul text-slate-500"></i> Breakdown by Source
+                        </h3>
+                        <span class="text-[10px] text-gray-500 bg-slate-800/80 px-2 py-1 rounded border border-slate-700/50">Sorted by Volume</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-inner">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-400">
+                                <thead class="text-xs text-gray-300 uppercase bg-slate-900 sticky top-0 z-10 shadow-sm">
+                                    <tr>
+                                        <th class="px-4 py-2.5 bg-slate-900 font-semibold tracking-wide">Camera Location</th>
+                                        <th class="px-4 py-2.5 text-right bg-slate-900 font-semibold tracking-wide">Cars</th>
+                                        <th class="px-4 py-2.5 text-right bg-slate-900 font-semibold tracking-wide">Motorcycles</th>
+                                        <th class="px-4 py-2.5 text-right bg-slate-900 font-semibold tracking-wide">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-700/50">
+                `;
+                
+                // Sort by total volume desc
+                const sortedEntries = Object.entries(data.by_camera).sort((a, b) => b[1].total - a[1].total);
+
+                for (const [name, stats] of sortedEntries) {
+                    html += `
+                        <tr class="hover:bg-slate-700/30 transition-colors group">
+                            <td class="px-4 py-2 font-medium text-white group-hover:text-indigo-300 transition-colors truncate max-w-[200px]" title="${name}">
+                                ${name}
+                            </td>
+                            <td class="px-4 py-2 text-right text-gray-300">${stats.car.toLocaleString()}</td>
+                            <td class="px-4 py-2 text-right text-gray-300">${stats.motorcycle.toLocaleString()}</td>
+                            <td class="px-4 py-2 text-right font-bold text-white bg-slate-800/30">${stats.total.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+                
+                html += `</tbody></table></div></div>`;
+                
+                container.innerHTML = html;
+                
+            } catch (e) {
+                container.innerHTML = `<div class="text-center text-red-400 py-8">Failed to fetch data.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

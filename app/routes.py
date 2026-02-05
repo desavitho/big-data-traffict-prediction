@@ -1,4 +1,5 @@
 import time
+import datetime
 import uuid
 import io
 import csv
@@ -9,7 +10,8 @@ from flask import Blueprint, render_template, jsonify, request, Response, send_f
 
 from app.config import CLASS_CAR, CLASS_MOTORCYCLE, HISTORY_MAX_LEN
 import app.globals as g
-from app.utils import save_config, save_stats, calculate_window_stats, get_history_series
+from app.utils import save_config, save_stats, calculate_window_stats, get_history_series, get_datalake_stats, backfill_camera_history, generate_varied_history
+from app.database import get_camera_history, predict_future_traffic
 from app.services.camera import start_camera_agents, stop_agent, CameraAgent
 
 bp = Blueprint('main', __name__)
@@ -17,6 +19,14 @@ bp = Blueprint('main', __name__)
 @bp.route("/")
 def index():
     return render_template("index.html")
+
+@bp.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
+@bp.route("/documentation")
+def documentation():
+    return render_template("documentation.html")
 
 @bp.route("/api/stats")
 def get_stats():
@@ -77,18 +87,45 @@ def get_stats():
 @bp.route("/api/history")
 def get_history():
     period = request.args.get("period", "30m")
-    start_ts = request.args.get("start_ts")
+    start_ts_arg = request.args.get("start_ts")
     
     # Identify active source
     active_source_id = next((s["id"] for s in g.CCTV_SOURCES if s["url"] == g.VIDEO_SOURCE), None)
     
-    if active_source_id and active_source_id in g.global_stats:
-        src_stats = g.global_stats[active_source_id]
-        if "history" in src_stats:
-            series = get_history_series(src_stats["history"], period, start_ts)
-            return jsonify(series)
+    if active_source_id:
+        # Determine query range based on period to optimize DB fetch
+        query_start = None
+        now = time.time()
+        
+        if start_ts_arg:
+             query_start = float(start_ts_arg)
+        elif period == "30m":
+             query_start = now - 1800
+        elif period == "1h":
+             query_start = now - 3600
+        elif period == "5h":
+             query_start = now - 18000
+        elif period == "24h":
+             query_start = now - 86400
+        
+        # Fetch from DB (High Performance)
+        history = get_camera_history(active_source_id, start_ts=query_start)
+        
+        # Process into series buckets
+        series = get_history_series(history, period, start_ts_arg)
+        return jsonify(series)
             
     return jsonify([])
+
+@bp.route("/api/datalake/stats")
+def datalake_stats():
+    """
+    API Endpoint to fetch aggregated stats directly from Data Lake CSVs
+    Query Param: date (YYYY-MM-DD) - defaults to today
+    """
+    date_str = request.args.get("date")
+    stats = get_datalake_stats(date_str)
+    return jsonify(stats)
 
 @bp.route("/api/export_csv")
 def export_history_csv():
@@ -190,12 +227,29 @@ def switch_source():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@bp.route("/api/verify_admin", methods=["POST"])
+def verify_admin():
+    try:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+        
+        if username == "admin" and password == "@dmin12345":
+            return jsonify({"status": "success", "message": "Credentials valid"})
+        else:
+            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @bp.route("/api/add_camera", methods=["POST"])
 def add_camera():
     try:
         data = request.json
         name = data.get("name")
         url = data.get("url")
+        lat = data.get("lat")
+        lng = data.get("lng")
+        mirror_id = data.get("mirror_id")
         username = data.get("username")
         password = data.get("password")
 
@@ -210,7 +264,10 @@ def add_camera():
             "id": str(uuid.uuid4()),
             "name": name,
             "url": url,
-            "active": False
+            "lat": lat,
+            "lng": lng,
+            "active": False,
+            "mirror_id": mirror_id
         }
         
         g.CCTV_SOURCES.append(new_camera)
@@ -226,6 +283,165 @@ def add_camera():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@bp.route("/api/edit_camera", methods=["POST"])
+def edit_camera():
+    try:
+        data = request.json
+        source_id = data.get("id")
+        name = data.get("name")
+        url = data.get("url")
+        lat = data.get("lat")
+        lng = data.get("lng")
+        mirror_id = data.get("mirror_id")
+        username = data.get("username")
+        password = data.get("password")
+
+        # Hardcoded credentials
+        if username != "admin" or password != "@dmin12345":
+            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+        
+        target_camera = next((s for s in g.CCTV_SOURCES if s["id"] == source_id), None)
+        
+        if not target_camera:
+            return jsonify({"status": "error", "message": "Camera not found"}), 404
+
+        # Update fields
+        old_url = target_camera["url"]
+        if name: target_camera["name"] = name
+        if url: target_camera["url"] = url
+        target_camera["lat"] = lat # Allow None/Empty
+        target_camera["lng"] = lng
+        target_camera["mirror_id"] = mirror_id
+        
+        save_config(g.CCTV_SOURCES)
+        
+        # If URL changed, restart agent
+        if url and url != old_url:
+            stop_agent(source_id)
+            if g.yolo_model_instance:
+                agent = CameraAgent(target_camera, g.yolo_model_instance)
+                g.camera_agents[source_id] = agent
+                agent.start()
+        elif name:
+            # If only name changed, update agent name
+            if source_id in g.camera_agents:
+                g.camera_agents[source_id].source_name = name
+        
+        return jsonify({"status": "success", "message": "Camera updated"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@bp.route("/api/backfill_camera", methods=["POST"])
+def backfill_camera():
+    try:
+        data = request.json
+        new_id = data.get("id")
+        template_id = data.get("template_id")
+        hours = data.get("hours", 24)
+        start_date = data.get("start_date")
+        generate_datalake = data.get("generate_datalake", False)
+        username = data.get("username")
+        password = data.get("password")
+        if username != "admin" or password != "@dmin12345":
+            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+        if not new_id or not template_id:
+            return jsonify({"status": "error", "message": "id and template_id are required"}), 400
+        
+        # STOP AGENT to prevent race condition
+        was_running = False
+        if new_id in g.camera_agents:
+            stop_agent(new_id)
+            was_running = True
+            
+        result = backfill_camera_history(new_id, template_id, hours, generate_datalake, start_date)
+        
+        # RESTART AGENT
+        if was_running:
+            target_camera = next((s for s in g.CCTV_SOURCES if s["id"] == new_id), None)
+            if target_camera and g.yolo_model_instance:
+                agent = CameraAgent(target_camera, g.yolo_model_instance)
+                g.camera_agents[new_id] = agent
+                agent.start()
+                
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@bp.route("/api/backfill_many", methods=["POST"])
+def backfill_many():
+    try:
+        data = request.json
+        template_id = data.get("template_id")
+        hours = data.get("hours", 24)
+        start_date = data.get("start_date")
+        generate_datalake = data.get("generate_datalake", False)
+        ids = data.get("ids") or []
+        names = data.get("names") or []
+        username = data.get("username")
+        password = data.get("password")
+        
+        if username != "admin" or password != "@dmin12345":
+            return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+        if not template_id:
+            return jsonify({"status": "error", "message": "template_id is required"}), 400
+        
+        # Normalize name list for matching
+        def norm(s):
+            return (s or "").replace("–", "-").strip().lower()
+        
+        target_ids = set(ids)
+        if names:
+            name_set = set(norm(n) for n in names)
+            for s in g.CCTV_SOURCES:
+                if norm(s.get("name")) in name_set:
+                    target_ids.add(s["id"])
+        
+        if not target_ids:
+            return jsonify({"status": "error", "message": "No valid target cameras found"}), 404
+        
+        results = []
+        success = 0
+        for tid in target_ids:
+            # STOP AGENT
+            was_running = False
+            if tid in g.camera_agents:
+                stop_agent(tid)
+                was_running = True
+
+            res = backfill_camera_history(tid, template_id, hours, generate_datalake, start_date)
+            
+            # RESTART AGENT
+            if was_running:
+                target_camera = next((s for s in g.CCTV_SOURCES if s["id"] == tid), None)
+                if target_camera and g.yolo_model_instance:
+                    agent = CameraAgent(target_camera, g.yolo_model_instance)
+                    g.camera_agents[tid] = agent
+                    agent.start()
+
+            status = res.get("status")
+            name = next((x["name"] for x in g.CCTV_SOURCES if x["id"] == tid), tid)
+            results.append({"id": tid, "name": name, "status": status})
+            if status == "success":
+                success += 1
+        
+        return jsonify({
+            "status": "success",
+            "template_id": template_id,
+            "processed": len(target_ids),
+            "success": success,
+            "results": results
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@bp.route("/api/generate_history", methods=["POST"])
+def generate_history():
+    try:
+        # Generate 7 days history to support prediction for any day of week
+        res = generate_varied_history(hours=168)
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 @bp.route("/api/delete_camera", methods=["POST"])
 def delete_camera():
     try:
@@ -295,9 +511,8 @@ def reset_data():
         # Save Empty Stats
         save_stats()
         
-        return jsonify({"status": "success", "message": "All data has been erased."})
+        return jsonify({"status": "success", "message": "All traffic data has been reset."})
     except Exception as e:
-        print(f"[ERROR] Failed to reset data: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @bp.route("/metrics")
@@ -391,3 +606,84 @@ def generate():
 def video_feed():
     return Response(generate(),
                     mimetype = "multipart/x-mixed-replace; boundary=frame")
+
+@bp.route("/api/predict_traffic", methods=["POST"])
+def predict_traffic():
+    try:
+        data = request.json
+        # camera_id optional. If not provided, predict for ALL cameras.
+        camera_id = data.get("camera_id") 
+        target_time_str = data.get("target_time") # YYYY-MM-DD HH:MM
+        
+        if not target_time_str:
+            return jsonify({"status": "error", "message": "target_time is required"}), 400
+            
+        # Parse Time
+        try:
+            dt = datetime.datetime.strptime(target_time_str, "%Y-%m-%d %H:%M")
+        except ValueError:
+            return jsonify({"status": "error", "message": "Invalid date format. Use YYYY-MM-DD HH:MM"}), 400
+            
+        # SQLite: 0=Sunday, 1=Monday... 6=Saturday
+        iso_dow = dt.isoweekday()
+        sqlite_dow = 0 if iso_dow == 7 else iso_dow
+        hour = dt.hour
+        
+        predictions = []
+        
+        # Determine targets
+        targets = []
+        if camera_id:
+            source = next((s for s in g.CCTV_SOURCES if s["id"] == camera_id), None)
+            if source:
+                targets.append(source)
+        else:
+            targets = g.CCTV_SOURCES
+            
+        if not targets:
+             return jsonify({"status": "error", "message": "No cameras found"}), 404
+
+        for source in targets:
+            avg_vehicles_per_hour = predict_future_traffic(source["id"], sqlite_dow, hour)
+            
+            # Determine Status & Decision
+            status = "LANCAR"
+            color = "text-green-500"
+            recommendation = "Traffic is flowing smoothly. No action required."
+            action_icon = "fas fa-check-circle"
+            
+            if avg_vehicles_per_hour > 1000:
+                status = "MACET PARAH"
+                color = "text-red-600"
+                recommendation = "CRITICAL: Deploy traffic officers immediately. Divert incoming traffic to alternative routes."
+                action_icon = "fas fa-exclamation-triangle"
+            elif avg_vehicles_per_hour > 500:
+                status = "RAMAI"
+                color = "text-red-400"
+                recommendation = "High volume detected. Increase green light duration and monitor for potential gridlocks."
+                action_icon = "fas fa-traffic-light"
+            elif avg_vehicles_per_hour > 200:
+                status = "SEDANG"
+                color = "text-yellow-400"
+                recommendation = "Moderate traffic. Standby for potential increase."
+                action_icon = "fas fa-eye"
+                
+            predictions.append({
+                "camera_name": source.get("name", "Unknown"),
+                "camera_id": source["id"],
+                "vehicle_count": round(avg_vehicles_per_hour),
+                "traffic_status": status,
+                "status_color": color,
+                "recommendation": recommendation,
+                "action_icon": action_icon
+            })
+            
+        return jsonify({
+            "status": "success",
+            "timestamp": target_time_str,
+            "predictions": predictions
+        })
+        
+    except Exception as e:
+        print(f"Prediction API Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500

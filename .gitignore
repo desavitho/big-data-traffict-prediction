@@ -1,7 +1,23 @@
-venv/
+# Python
 __pycache__/
 *.pyc
-log.txt
-*.mp4
+*.pyo
+*.pyd
+venv/
+env/
+
+# Data & Database
+data_lake/
+data/traffic_data.db
+data/*.tmp
+data/*.bak
+data/*.broken
+*.log
+stats_dump*.json
+
+# System
 .DS_Store
-.env
+
+# IDE
+.vscode/
+.idea/

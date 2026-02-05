@@ -16,12 +16,13 @@ HOST_IP = "0.0.0.0"
 HOST_PORT = 5000
 
 # YOLO & Detection Config
-CONF_THRESHOLD = 0.15      # Slightly higher to reduce ghost detections with TTA
-IOU_THRESHOLD = 0.8        # Higher to allow overlapping objects (e.g. piled up motorcycles)
-PROCESS_INTERVAL = 5
-# Increase history length to support up to ~30 days
-# 30 days * 24h * 60m * 12 (5s intervals) = 518,400 points
-HISTORY_MAX_LEN = 600000
+# Tuning for higher recall in crowded scenes
+CONF_THRESHOLD = 0.10
+IOU_THRESHOLD = 0.50
+PROCESS_INTERVAL = 2
+# Increase history length to support up to ~24h in memory (Hot Data)
+# 24h * 60m * 30 (2s intervals) = ~43,200 points
+HISTORY_MAX_LEN = 50000
 
 # Vehicle Classes
 VEHICLE_CLASSES = [1, 2, 3, 5, 7]

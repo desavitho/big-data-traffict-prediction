@@ -1,11 +1,387 @@
+import csv
+import datetime
 import json
 import os
 import time
 import uuid
 import shutil
+import random
+import math
 from collections import deque
 from app.config import CONFIG_FILE, STATS_FILE, HISTORY_MAX_LEN
 import app.globals as g
+
+from app.database import insert_history_batch, clear_all_history
+
+def get_camera_profile(name):
+    """
+    Determines the traffic profile based on the camera location name.
+    Returns: 'EXTREME', 'HEAVY', 'ARTERIAL', 'RESIDENTIAL', or 'DEFAULT'
+    """
+    name = name.lower()
+    if any(k in name for k in ['gedebage', 'soekarno hatta', 'kiaracondong', 'samsat', 'binong']):
+        return 'EXTREME'
+    elif any(k in name for k in ['dago', 'dipatiukur', 'gasibu', 'cihampelas', 'braga', 'asia afrika', 'merdeka', 'surapati']):
+        return 'HEAVY'
+    elif any(k in name for k in ['fly over', 'flyover', 'pasupati', 'pasteur', 'sudirman', 'peta', 'laswi', 'pelajar pejuang']):
+        return 'ARTERIAL'
+    elif any(k in name for k in ['waas', 'batununggal', 'sukahaji', 'cijerah', 'sariningsih', 'komplek']):
+        return 'RESIDENTIAL'
+    return 'DEFAULT'
+
+def generate_varied_history(hours=24):
+    """
+    Generates varied synthetic history for all cameras based on their location profile.
+    """
+    # Ensure all configured cameras exist in global stats
+    if not g.CCTV_SOURCES:
+        g.CCTV_SOURCES = load_config()
+
+    # Clear existing history to avoid duplicates and ensure clean slate
+    try:
+        clear_all_history()
+    except Exception as e:
+        print(f"Error clearing history: {e}")
+
+    current_source_ids = {s["id"] for s in g.CCTV_SOURCES}
+    for s in g.CCTV_SOURCES:
+        if s["id"] not in g.global_stats:
+             g.global_stats[s["id"]] = {
+                "name": s["name"],
+                "current_count": 0,
+                "current_class_counts": {"0": 0, "1": 0},
+                "accumulated_count": 0,
+                "accumulated_class_counts": {"0": 0, "1": 0},
+                "history": deque(maxlen=HISTORY_MAX_LEN)
+            }
+
+    now = time.time()
+    start_ts = now - (hours * 3600)
+    
+    # 60s step for 7-day history (Manageable size: ~10k points)
+    step = 60
+    
+    timestamps = []
+    t = start_ts
+    while t <= now:
+        timestamps.append(t)
+        t += step
+        
+    for source_id, stats in g.global_stats.items():
+        if source_id not in current_source_ids:
+            continue
+
+        name = stats.get("name", "")
+        profile = get_camera_profile(name)
+        
+        # Profile Configuration
+        if profile == 'EXTREME':
+            base_density = random.randint(40, 60)
+            peak_boost = random.randint(80, 120)
+            morning_peak_hour = 7.0  # Early rush
+            evening_peak_hour = 17.5 # Late rush
+            peak_width = 2.5         # Wide peak (long jams)
+        elif profile == 'HEAVY':
+            base_density = random.randint(20, 35)
+            peak_boost = random.randint(40, 60)
+            morning_peak_hour = 7.5
+            evening_peak_hour = 17.0
+            peak_width = 2.0
+        elif profile == 'ARTERIAL':
+            base_density = random.randint(30, 50) # Steady flow
+            peak_boost = random.randint(30, 50)   # Less dramatic spikes
+            morning_peak_hour = 8.0
+            evening_peak_hour = 18.0
+            peak_width = 3.0
+        elif profile == 'RESIDENTIAL':
+            base_density = random.randint(2, 8)   # Quiet usually
+            peak_boost = random.randint(20, 40)   # Sharp school/work runs
+            morning_peak_hour = 6.5
+            evening_peak_hour = 18.0
+            peak_width = 1.0         # Sharp peaks
+        else: # DEFAULT
+            base_density = random.randint(10, 20)
+            peak_boost = random.randint(20, 30)
+            morning_peak_hour = 7.5
+            evening_peak_hour = 17.0
+            peak_width = 1.5
+            
+        # Add slight randomness to hours so not everyone is identical
+        morning_peak_hour += random.uniform(-0.3, 0.3)
+        evening_peak_hour += random.uniform(-0.3, 0.3)
+        
+        # Reset stats
+        stats["history"] = deque(maxlen=HISTORY_MAX_LEN)
+        stats["accumulated_count"] = 0
+        stats["accumulated_class_counts"] = {"0": 0, "1": 0}
+        
+        history_batch = []
+        
+        for ts in timestamps:
+            dt = datetime.datetime.fromtimestamp(ts)
+            hour_float = dt.hour + dt.minute / 60.0
+            
+            # Traffic Curve
+            m_peak = peak_boost * math.exp(-((hour_float - morning_peak_hour)**2) / peak_width)
+            e_peak = (peak_boost * 1.2) * math.exp(-((hour_float - evening_peak_hour)**2) / peak_width) # Evening usually worse
+            
+            flow = base_density + m_peak + e_peak
+            
+            # Noise
+            actual_density = int(flow * (1.0 + random.uniform(-0.15, 0.15)))
+            if actual_density < 0: actual_density = 0
+            
+            # Class Ratio
+            motor_ratio = 0.65 if profile in ['RESIDENTIAL', 'EXTREME'] else 0.55
+            motor_ratio += random.uniform(-0.05, 0.05)
+            
+            motors = int(actual_density * motor_ratio)
+            cars = actual_density - motors
+            
+            # New Count simulation (Flow Rate)
+            # Higher density usually means higher flow.
+            # Flow factor: % of cars moving out of frame per step (15s)
+            flow_factor = 0.15 # 15% move
+            if profile == 'EXTREME': flow_factor = 0.25
+            elif profile == 'HEAVY': flow_factor = 0.20
+            elif profile == 'RESIDENTIAL': flow_factor = 0.05
+            
+            new_count = int(actual_density * flow_factor)
+            
+            # Add randomness and minimum movement
+            new_count = int(new_count * random.uniform(0.8, 1.2))
+            if actual_density > 5 and new_count == 0: new_count = 1
+            
+            new_motors = int(new_count * motor_ratio)
+            new_cars = new_count - new_motors
+            
+            item = {
+                "ts": ts,
+                "count": actual_density,
+                "cars": cars,
+                "motors": motors,
+                "new_count": new_count,
+                "new_cars": new_cars,
+                "new_motors": new_motors
+            }
+            history_batch.append(item)
+            
+            stats["accumulated_count"] += new_count
+            stats["accumulated_class_counts"]["0"] += new_cars
+            stats["accumulated_class_counts"]["1"] += new_motors
+            
+        stats["history"].extend(history_batch)
+        
+        if history_batch:
+            # Sync to SQLite for Prediction API
+            db_records = []
+            for item in history_batch:
+                db_records.append((
+                    source_id,
+                    item["ts"],
+                    item["count"],
+                    item["cars"],
+                    item["motors"],
+                    item["new_count"],
+                    item["new_cars"],
+                    item["new_motors"]
+                ))
+            try:
+                insert_history_batch(db_records)
+            except Exception as e:
+                print(f"[ERROR] Failed to insert history batch for {source_id}: {e}")
+
+            last = history_batch[-1]
+            stats["current_count"] = last["count"]
+            stats["current_class_counts"] = {"0": last["cars"], "1": last["motors"]}
+            
+    save_stats()
+    return {"status": "success", "message": f"Generated location-aware history for {len(g.global_stats)} cameras"}
+
+def backfill_camera_history(new_id, template_id, hours=24, generate_datalake=False, start_date=None):
+    now = time.time()
+    if start_date:
+        try:
+            start_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            start_ts = start_dt.timestamp()
+        except ValueError:
+            return {"status": "error", "message": "Invalid date format. Use YYYY-MM-DD"}
+    else:
+        start_ts = now - float(hours) * 3600.0
+
+    if template_id not in g.global_stats:
+        return {"status": "error", "message": "Template source not found"}
+
+    template_stats = g.global_stats[template_id]
+    template_history = list(template_stats.get("history", []))
+    if not template_history:
+        return {"status": "error", "message": "Template has no history data"}
+
+    items_to_add = []
+    if start_date:
+        last_ts = template_history[-1]["ts"]
+        pattern_start = last_ts - 86400
+        pattern_items = [h for h in template_history if h["ts"] > pattern_start]
+        if not pattern_items:
+            pattern_items = template_history
+
+        daily_pattern = []
+        for item in pattern_items:
+            dt = datetime.datetime.fromtimestamp(item["ts"])
+            secs = dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1e6
+            daily_pattern.append((secs, item))
+        daily_pattern.sort(key=lambda x: x[0])
+
+        loop_date = datetime.datetime.fromtimestamp(start_ts).date()
+        end_date = datetime.datetime.fromtimestamp(now).date()
+        while loop_date <= end_date:
+            day_start = datetime.datetime.combine(loop_date, datetime.time.min).timestamp()
+            for secs, item in daily_pattern:
+                new_ts = day_start + secs
+                if new_ts < start_ts:
+                    continue
+                if new_ts > now:
+                    break
+                new_item = item.copy()
+                new_item["ts"] = new_ts
+                items_to_add.append(new_item)
+            loop_date += datetime.timedelta(days=1)
+    else:
+        items_to_add = [h for h in template_history if h.get("ts", 0) >= start_ts]
+
+    if new_id not in g.global_stats:
+        name = next((s["name"] for s in g.CCTV_SOURCES if s["id"] == new_id), "Unknown")
+        g.global_stats[new_id] = {
+            "name": name,
+            "current_count": 0,
+            "current_class_counts": {"0": 0, "1": 0},
+            "accumulated_count": 0,
+            "accumulated_class_counts": {"0": 0, "1": 0},
+            "history": deque(maxlen=HISTORY_MAX_LEN)
+        }
+
+    dst = g.global_stats[new_id]
+    dst["history"] = deque(maxlen=HISTORY_MAX_LEN)
+    dst["accumulated_count"] = 0
+    dst["accumulated_class_counts"] = {"0": 0, "1": 0}
+    for item in items_to_add:
+        dst["history"].append(item)
+        dst["accumulated_count"] += item.get("new_count", 0)
+        dst["accumulated_class_counts"]["0"] += item.get("new_cars", 0)
+        dst["accumulated_class_counts"]["1"] += item.get("new_motors", 0)
+
+    if items_to_add:
+        # Sync to SQLite
+        db_records = []
+        for item in items_to_add:
+            db_records.append((
+                new_id,
+                item["ts"],
+                item.get("count", 0),
+                item.get("cars", 0),
+                item.get("motors", 0),
+                item.get("new_count", 0),
+                item.get("new_cars", 0),
+                item.get("new_motors", 0)
+            ))
+        try:
+            insert_history_batch(db_records)
+        except Exception as e:
+            print(f"[ERROR] Failed to insert backfill batch to DB: {e}")
+
+        last = items_to_add[-1]
+        dst["current_count"] = last.get("count", 0)
+        dst["current_class_counts"] = {
+            "0": last.get("new_cars", 0),
+            "1": last.get("new_motors", 0)
+        }
+
+    save_stats()
+
+    if generate_datalake and items_to_add:
+        from collections import defaultdict
+        items_by_date = defaultdict(list)
+        for item in items_to_add:
+            ts = item.get("ts", now)
+            dt = datetime.datetime.fromtimestamp(ts)
+            date_key = (dt.year, dt.month, dt.day)
+            items_by_date[date_key].append(item)
+
+        name = dst.get("name", new_id)
+        for (year, month, day), day_items in items_by_date.items():
+            base = os.path.join("/var/www/vehicle-counter/data_lake/raw", str(year), f"{month:02d}", f"{day:02d}")
+            os.makedirs(base, exist_ok=True)
+            fp = os.path.join(base, f"traffic_log_{new_id}.csv")
+            file_exists = os.path.isfile(fp)
+            with open(fp, "a", newline="") as f:
+                w = csv.writer(f)
+                if not file_exists:
+                    w.writerow(["timestamp", "source_id", "source_name", "class_id", "confidence", "bbox"])
+                for item in day_items:
+                    ts = item.get("ts")
+                    for _ in range(item.get("new_cars", 0)):
+                        w.writerow([ts, new_id, name, "car", "0.50", "[0,0,0,0]"])
+                    for _ in range(item.get("new_motors", 0)):
+                        w.writerow([ts, new_id, name, "motorcycle", "0.50", "[0,0,0,0]"])
+
+    return {"status": "success", "message": "Backfill completed"}
+
+def get_datalake_stats(date_str=None):
+    """
+    Read aggregated stats from Data Lake for a specific date (YYYY-MM-DD).
+    If date_str is None, defaults to today.
+    """
+    if date_str is None:
+        now = datetime.datetime.now()
+    else:
+        try:
+            now = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            return {"error": "Invalid date format. Use YYYY-MM-DD"}
+            
+    # Path to Data Lake partition
+    partition_path = os.path.join(
+        "/var/www/vehicle-counter/data_lake/raw", 
+        str(now.year), 
+        f"{now.month:02d}", 
+        f"{now.day:02d}"
+    )
+    
+    if not os.path.exists(partition_path):
+        return {"total_vehicles": 0, "by_camera": {}, "date": now.strftime("%Y-%m-%d"), "message": "No data found for this date"}
+        
+    stats = {
+        "date": now.strftime("%Y-%m-%d"),
+        "total_vehicles": 0,
+        "by_camera": {}
+    }
+    
+    try:
+        # Iterate over all CSV files in the partition
+        for filename in os.listdir(partition_path):
+            if filename.endswith(".csv"):
+                filepath = os.path.join(partition_path, filename)
+                with open(filepath, 'r') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        stats["total_vehicles"] += 1
+                        
+                        src_name = row.get("source_name", "Unknown")
+                        cls_id = row.get("class_id", "unknown")
+                        
+                        if src_name not in stats["by_camera"]:
+                            stats["by_camera"][src_name] = {"total": 0, "car": 0, "motorcycle": 0}
+                            
+                        stats["by_camera"][src_name]["total"] += 1
+                        if cls_id == "car":
+                            stats["by_camera"][src_name]["car"] += 1
+                        elif cls_id == "motorcycle":
+                            stats["by_camera"][src_name]["motorcycle"] += 1
+                            
+        return stats
+    except Exception as e:
+        print(f"[ERROR] Failed to read Data Lake: {e}")
+        return {"error": str(e)}
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
