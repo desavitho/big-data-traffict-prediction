@@ -348,6 +348,36 @@ class CameraAgent(threading.Thread):
     def stop(self):
         self.running = False
 
+def generate_frames(camera_id):
+    # Find the source URL
+    target_url = None
+    for src in g.CCTV_SOURCES:
+        if src["id"] == camera_id:
+            target_url = src["url"]
+            break
+            
+    if target_url:
+        # Set the global video source so the agent starts updating outputFrame
+        g.VIDEO_SOURCE = target_url
+        
+        while True:
+            with g.lock:
+                if g.outputFrame is None:
+                    # If no frame yet, yield a blank frame or wait
+                    time.sleep(0.1)
+                    continue
+                    
+                (flag, encodedImage) = cv2.imencode(".jpg", g.outputFrame)
+                if not flag:
+                    time.sleep(0.1)
+                    continue
+            
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
+            
+            # Throttle to avoid busy loop, match process interval roughly
+            time.sleep(0.5)
+
 def start_camera_agents():
     print("[INFO] Loading YOLOv8 model (Shared)...")
     g.yolo_model_instance = YOLO(YOLO_MODEL_PATH)

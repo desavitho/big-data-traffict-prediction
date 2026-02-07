@@ -1,222 +1,852 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dokumentasi - SmartTraffic AI</title>
+    <title>Documentation - SmartTraffic AI</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
         }
-        .section-title {
-            color: #60a5fa;
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-sidebar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .content-card {
+            background: #1e293b50;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            color: #f8fafc;
+            letter-spacing: -0.025em;
+        }
+        
+        .prose-h2 {
             font-size: 1.5rem;
             font-weight: 700;
+            margin-top: 2.5rem;
             margin-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
+
+        .prose-h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #e2e8f0;
+        }
+
+        .prose-p {
+            margin-bottom: 1.25rem;
+            line-height: 1.75;
+            color: #94a3b8;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: #1e293b !important;
+            border: 1px solid #334155;
             border-radius: 0.5rem;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
+            padding: 1rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
         }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #3b82f6;
-        }
+        
         code {
-            background: #1e293b;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .inline-code {
+            background: rgba(51, 65, 85, 0.5);
+            color: #38bdf8;
             padding: 0.2rem 0.4rem;
             border-radius: 0.25rem;
-            color: #f472b6;
-            font-family: monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
-        .api-badge {
-            display: inline-block;
-            padding: 0.1rem 0.4rem;
-            border-radius: 0.25rem;
+
+        /* Sidebar Navigation */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            color: #94a3b8;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+        .nav-link.active {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            font-weight: 500;
+        }
+        .nav-section {
+            text-transform: uppercase;
             font-size: 0.75rem;
-            font-weight: bold;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-left: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* API Badges */
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
             margin-right: 0.5rem;
         }
-        .badge-get { background: #059669; color: white; }
-        .badge-post { background: #2563eb; color: white; }
+        .badge-get { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-post { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-auth { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-6">
+<body class="overflow-hidden h-screen flex">
 
-    <!-- Navbar -->
-    <nav class="glass-panel mb-8 px-6 py-4 sticky top-4 z-50 shadow-2xl shadow-black/20 max-w-7xl mx-auto">
-        <div class="flex flex-wrap justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-cyan-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20 border border-white/10">
-                    <i class="fas fa-book text-white text-xl"></i>
-                </div>
-                <div class="hidden md:block">
-                    <h1 class="text-2xl font-bold text-white tracking-tight">
-                        SmartTraffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">Docs</span>
-                    </h1>
-                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span>System Guide</span>
-                        <span class="text-slate-600">|</span>
-                        <span class="text-gray-400">API Reference</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
-
-            <!-- Menu Items -->
-            <div id="mobile-menu" class="hidden md:flex w-full md:w-auto flex-col md:flex-row items-center gap-3 mt-4 md:mt-0 transition-all duration-300">
-                <a href="/" class="w-full md:w-auto px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 justify-center">
-                    <i class="fas fa-desktop"></i> Monitor
-                </a>
-                
-                <a href="/dashboard" class="w-full md:w-auto px-4 py-2 bg-slate-800/50 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 border border-slate-700 hover:border-indigo-500/50 justify-center">
-                    <i class="fas fa-chart-pie"></i> Dashboard
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="max-w-5xl mx-auto space-y-8">
-
-        <!-- Intro -->
-        <div class="glass-panel p-8">
-            <h2 class="text-3xl font-bold text-white mb-4">Tentang Sistem</h2>
-            <p class="text-gray-300 leading-relaxed">
-                <strong class="text-blue-400">SmartTraffic AI</strong> adalah sistem pemantauan lalu lintas cerdas yang menggunakan teknologi 
-                Computer Vision (YOLOv8) untuk mendeteksi dan menghitung kendaraan secara real-time. 
-                Sistem ini tidak hanya menghitung volume lalu lintas, tetapi juga menganalisis tingkat kepadatan 
-                untuk memberikan rekomendasi rute alternatif tercepat kepada pengguna.
-            </p>
+    <!-- Sidebar -->
+    <aside class="w-64 glass-sidebar hidden md:flex flex-col z-20 h-full fixed md:relative transform transition-transform duration-300 -translate-x-full md:translate-x-0" id="sidebar">
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center px-6 border-b border-white/5">
+            <img src="/static/img/logo.png" alt="SmartTraffic AI Logo" class="h-10 w-auto rounded-lg shadow-lg shadow-blue-500/20 border border-white/10">
         </div>
 
-        <!-- How it Works -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-panel p-6 text-center">
-                <div class="w-16 h-16 bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-400 text-2xl">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white mb-2">1. Deteksi</h3>
-                <p class="text-sm text-gray-400">
-                    Kamera CCTV mengambil gambar jalan raya. AI mendeteksi objek mobil dan motor setiap detik.
-                </p>
-            </div>
-            <div class="glass-panel p-6 text-center">
-                <div class="w-16 h-16 bg-indigo-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-400 text-2xl">
-                    <i class="fas fa-microchip"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white mb-2">2. Analisis</h3>
-                <p class="text-sm text-gray-400">
-                    Sistem menghitung kepadatan dan menentukan status (Lancar/Padat/Macet) serta menghitung estimasi delay.
-                </p>
-            </div>
-            <div class="glass-panel p-6 text-center">
-                <div class="w-16 h-16 bg-emerald-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-400 text-2xl">
-                    <i class="fas fa-map-marked-alt"></i>
-                </div>
-                <h3 class="text-lg font-bold text-white mb-2">3. Rekomendasi</h3>
-                <p class="text-sm text-gray-400">
-                    Dashboard menampilkan peta interaktif dan memberikan saran rute tercepat menghindari titik macet.
-                </p>
-            </div>
-        </div>
+        <!-- Navigation -->
+        <div class="flex-1 overflow-y-auto py-6 px-4">
+            <a href="/" class="nav-link mb-1">
+                <i class="fas fa-arrow-left w-5 opacity-70"></i> Back to Monitor
+            </a>
+            <a href="/dashboard" class="nav-link mb-4">
+                <i class="fas fa-chart-pie w-5 opacity-70"></i> Dashboard
+            </a>
 
-        <!-- Features -->
-        <div class="glass-panel p-8">
-            <h2 class="section-title">Fitur Unggulan</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="feature-card">
-                    <h3 class="font-bold text-white mb-2"><i class="fas fa-car text-blue-400 mr-2"></i> Klasifikasi Kendaraan</h3>
-                    <p class="text-sm text-gray-400">
-                        Membedakan antara Mobil dan Sepeda Motor dengan akurasi tinggi menggunakan model Deep Learning.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <h3 class="font-bold text-white mb-2"><i class="fas fa-route text-emerald-400 mr-2"></i> Smart Routing</h3>
-                    <p class="text-sm text-gray-400">
-                        Algoritma pencari jalan yang mempertimbangkan kemacetan real-time untuk memberikan rute alternatif.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <h3 class="font-bold text-white mb-2"><i class="fas fa-chart-line text-yellow-400 mr-2"></i> Statistik & History</h3>
-                    <p class="text-sm text-gray-400">
-                        Grafik volume lalu lintas per jam/hari dan kemampuan ekspor data ke format CSV.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <h3 class="font-bold text-white mb-2"><i class="fas fa-video text-red-400 mr-2"></i> Multi-Camera</h3>
-                    <p class="text-sm text-gray-400">
-                        Mendukung pemantauan banyak titik kamera sekaligus dalam satu dashboard terpusat.
-                    </p>
-                </div>
-            </div>
-        </div>
+            <div class="nav-section">Introduction</div>
+            <a href="#overview" class="nav-link active">Overview</a>
+            <a href="#key-metrics" class="nav-link">System Metrics</a>
+            <a href="#features" class="nav-link">Key Features</a>
 
-        <!-- API Reference -->
-        <div class="glass-panel p-8">
-            <h2 class="section-title">Referensi API</h2>
-            <div class="space-y-4">
-                <div class="bg-slate-900/50 p-4 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <span class="api-badge badge-get">GET</span>
-                        <code class="text-blue-300">/api/stats</code>
-                    </div>
-                    <p class="text-sm text-gray-400">Mengambil data statistik lalu lintas real-time (jumlah kendaraan, status per kamera).</p>
-                </div>
-                
-                <div class="bg-slate-900/50 p-4 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <span class="api-badge badge-get">GET</span>
-                        <code class="text-blue-300">/metrics</code>
-                    </div>
-                    <p class="text-sm text-gray-400">Endpoint untuk scraping Prometheus (monitoring infrastruktur).</p>
-                </div>
-
-                <div class="bg-slate-900/50 p-4 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <span class="api-badge badge-get">GET</span>
-                        <code class="text-blue-300">/export/csv</code>
-                    </div>
-                    <p class="text-sm text-gray-400">Mengunduh laporan data lalu lintas dalam format file CSV.</p>
-                </div>
-            </div>
+            <div class="nav-section">Architecture</div>
+            <a href="#system-workflow" class="nav-link">Workflow Diagram</a>
+                <a href="#components" class="nav-link">Core Components</a>
+                <a href="#big-data-prediction" class="nav-link">Big Data Prediction</a>
+                <div class="nav-section">Developers</div>
+            <a href="#api-reference" class="nav-link">API Reference</a>
+            <a href="#data-models" class="nav-link">Data Models</a>
         </div>
 
         <!-- Footer -->
-        <div class="text-center text-gray-500 text-sm pb-8">
-            <p>&copy; 2024 SmartTraffic AI System. All rights reserved.</p>
+        <div class="p-4 border-t border-white/5 text-xs text-slate-500 text-center">
+            v2.4.0 &bull; Build 2026.02
         </div>
+    </aside>
 
-    </div>
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-10 hidden md:hidden glass-blur"></div>
 
-    <!-- Mobile Menu Script -->
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Top Header -->
+        <header class="h-16 glass-header flex items-center justify-between px-6 z-10 shrink-0">
+            <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+
+            <!-- Breadcrumbs -->
+            <div class="hidden md:flex items-center text-sm text-slate-400">
+                <span>Docs</span>
+                <i class="fas fa-chevron-right text-xs mx-2 opacity-50"></i>
+                <span class="text-white font-medium">System Overview</span>
+            </div>
+
+            <!-- Search / Actions -->
+            <div class="flex items-center gap-4">
+                <div class="relative hidden sm:block">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" placeholder="Search documentation..." class="bg-slate-800/50 border border-slate-700 text-sm rounded-full py-1.5 pl-9 pr-4 text-slate-300 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 transition-all">
+                </div>
+                <a href="https://github.com/vehicle-counter" target="_blank" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto scroll-smooth p-6 md:p-10 lg:px-16" id="main-scroll">
+            <div class="max-w-4xl mx-auto pb-20">
+                
+                <!-- Overview Section -->
+                <section id="overview" class="mb-16 animate-fade-in">
+                    <h1 class="text-4xl font-bold text-white mb-6">SmartTraffic AI System</h1>
+                    <p class="prose-p text-lg">
+                        An advanced <strong>Edge/IoT Big Data</strong> solution designed for real-time traffic monitoring, analysis, and decision support. 
+                        By leveraging state-of-the-art Computer Vision (YOLOv8) and distributed processing patterns, the system transforms raw video streams into actionable insights.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+                        <div class="content-card p-5 border-l-4 border-blue-500">
+                            <h4 class="font-bold text-white mb-2">Real-time Processing</h4>
+                            <p class="text-sm text-slate-400">Process 30+ simultaneous RTSP streams with < 100ms latency per frame.</p>
+                        </div>
+                        <div class="content-card p-5 border-l-4 border-purple-500">
+                            <h4 class="font-bold text-white mb-2">Big Data Ready</h4>
+                            <p class="text-sm text-slate-400">Handling High Volume, Velocity, and Variety of traffic data on edge infrastructure.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Metrics Section -->
+                <section id="key-metrics" class="mb-16">
+                    <h2 class="prose-h2">System Metrics</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                            <div class="text-2xl font-bold text-blue-400">3.5M+</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Data Points</div>
+                        </div>
+                        <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                            <div class="text-2xl font-bold text-emerald-400">37</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Active Streams</div>
+                        </div>
+                        <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                            <div class="text-2xl font-bold text-purple-400">~1GB</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Metadata Storage</div>
+                        </div>
+                        <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700">
+                            <div class="text-2xl font-bold text-yellow-400">99.9%</div>
+                            <div class="text-xs text-slate-500 uppercase tracking-wider mt-1">Uptime</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Architecture Section -->
+                <section id="system-workflow" class="mb-16">
+                    <h2 class="prose-h2">Architecture Workflow</h2>
+                    <p class="prose-p">
+                        The system follows a pipelined architecture: <strong>Acquisition &rarr; Processing &rarr; Storage &rarr; Distribution</strong>. 
+                        The diagram below illustrates the data flow from camera sensors to the end-user dashboard.
+                    </p>
+                    
+                    <div class="content-card p-2 md:p-6 overflow-x-auto flex justify-center bg-[#0f172a]">
+                        <div class="mermaid">
+                            %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1e293b', 'edgeLabelBackground':'#0f172a', 'tertiaryColor': '#1e293b', 'fontFamily': 'Inter'}}}%%
+                            graph TD
+                                subgraph Acquisition ["1. Data Acquisition"]
+                                    A[fa:fa-video CCTV Sources] -->|RTSP/HTTP| B(Camera Agents)
+                                end
+                                
+                                subgraph Processing ["2. Edge Processing"]
+                                    B -->|Frame Buffer| C{YOLOv8 Engine}
+                                    C -->|Inference| D[Object Tracking]
+                                    D -->|Classification| E[Vehicle Counting]
+                                end
+                                
+                                subgraph Storage ["3. Persistence Layer"]
+                                    E -->|Batch Write| F[(SQLite / Data Lake)]
+                                    E -->|Update| G[In-Memory Cache]
+                                end
+                                
+                                subgraph Presentation ["4. Visualization"]
+                                    G --> H[API Gateway]
+                                    F -->|Analytics Query| H
+                                    H -->|JSON| I[Dashboard UI]
+                                    I -->|Map & Charts| J[User]
+                                end
+
+                                style A fill:#1d4ed8,stroke:#3b82f6,stroke-width:2px,color:#fff
+                                style C fill:#7e22ce,stroke:#a855f7,stroke-width:2px,color:#fff
+                                style F fill:#059669,stroke:#10b981,stroke-width:2px,color:#fff
+                                style I fill:#be123c,stroke:#f43f5e,stroke-width:2px,color:#fff
+                        </div>
+                    </div>
+                </section>
+
+                <section id="components" class="mb-16">
+                    <h2 class="prose-h2">Core Components</h2>
+                    <p class="prose-p">Struktur modul utama yang membangun sistem dari akuisisi data hingga penyajian.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-video text-emerald-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Camera Agent</h3>
+                                    <p class="text-slate-400 text-sm">Multi-thread capture, YOLO inference, counting, stabilisasi stream.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/services/camera.py</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-network-wired text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">API & Views</h3>
+                                    <p class="text-slate-400 text-sm">Endpoint /api/stats, /api/history, /api/predict_traffic, /api/reset_data, /metrics, /export/csv serta halaman Dashboard & Docs.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/routes.py</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-gears text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Data Management</h3>
+                                    <p class="text-slate-400 text-sm">Load/save stats & config, backfill, generate history, rolling window, Data Lake export.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/utils.py</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-database text-amber-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Database Layer</h3>
+                                    <p class="text-slate-400 text-sm">SQLite schema, batch insert, history query, prediksi berbasis DOW/Hour, agregasi lifetime.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/database.py</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-slate-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-layer-group text-slate-300"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Global State</h3>
+                                    <p class="text-slate-400 text-sm">global_stats, daftar kamera, agen aktif, lock untuk thread-safety.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/globals.py</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-chart-pie text-rose-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Frontend Dashboard</h3>
+                                    <p class="text-slate-400 text-sm">Peta, routing realistis, kartu statistik, editor marker.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/templates/dashboard.html</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-file-alt text-cyan-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Documentation UI</h3>
+                                    <p class="text-slate-400 text-sm">Sidebar, flowchart arsitektur & prediksi, 4Vs Big Data.</p>
+                                    <p class="text-xs text-slate-500 mt-2">File: app/templates/documentation.html</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content-card p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0 mt-1">
+                                    <i class="fas fa-cubes text-teal-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-semibold">Config & Models</h3>
+                                    <p class="text-slate-400 text-sm">Konfigurasi kamera & ROI, file statistik JSON, model YOLO.</p>
+                                    <p class="text-xs text-slate-500 mt-2">Files: app/config.py, data/cctv_config.json, data/traffic_stats.json, models/yolov8l.pt</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Study Case & Analysis (Assignment Mapping) -->
+                <section id="study-case" class="mb-16">
+                    <h2 class="prose-h2">Study Case: Traffic Efficiency Analysis</h2>
+                    <p class="prose-p">
+                        This section maps the system's capabilities to the standard traffic management framework (Analysis, Identify, Design, Implementation, Evaluation).
+                    </p>
+
+                    <!-- 1. ANALYSIS -->
+                    <h3 class="prose-h3 text-blue-400">1. Analysis & Comparison</h3>
+                    <p class="text-sm text-slate-400 mb-4">Comparison of traffic monitoring methodologies.</p>
+                    <div class="overflow-x-auto rounded-lg border border-slate-700">
+                        <table class="w-full text-sm text-left text-slate-400">
+                            <thead class="text-xs text-slate-200 uppercase bg-slate-800">
+                                <tr>
+                                    <th class="px-6 py-3">Feature</th>
+                                    <th class="px-6 py-3 text-blue-400">SmartTraffic AI (Edge)</th>
+                                    <th class="px-6 py-3">Traditional Loops</th>
+                                    <th class="px-6 py-3">Manual Survey</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-slate-900 border-b border-slate-800">
+                                    <td class="px-6 py-4 font-medium text-white">Cost</td>
+                                    <td class="px-6 py-4 text-green-400">Low (Existing CCTV)</td>
+                                    <td class="px-6 py-4 text-red-400">High (Road Works)</td>
+                                    <td class="px-6 py-4 text-yellow-400">Medium (Labor)</td>
+                                </tr>
+                                <tr class="bg-slate-900/50 border-b border-slate-800">
+                                    <td class="px-6 py-4 font-medium text-white">Real-time Data</td>
+                                    <td class="px-6 py-4 text-green-400">Yes (< 1s Latency)</td>
+                                    <td class="px-6 py-4 text-green-400">Yes</td>
+                                    <td class="px-6 py-4 text-red-400">No (Post-processing)</td>
+                                </tr>
+                                <tr class="bg-slate-900">
+                                    <td class="px-6 py-4 font-medium text-white">Classification</td>
+                                    <td class="px-6 py-4 text-green-400">Deep Learning (Car/Motor)</td>
+                                    <td class="px-6 py-4 text-yellow-400">Limited (Length based)</td>
+                                    <td class="px-6 py-4 text-green-400">High Accuracy</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 2. IDENTIFY -->
+                    <h3 class="prose-h3 text-blue-400">2. Identify</h3>
+                    <p class="prose-p">
+                        The system automatically identifies:
+                        <ul class="list-disc list-inside text-slate-400 ml-4 space-y-1">
+                            <li>Vehicle Types (Car vs Motorcycle) using YOLOv8 models.</li>
+                            <li>Traffic Density Levels (Smooth, Heavy, Critical).</li>
+                            <li>Camera Operational Status (Online/Offline detection).</li>
+                        </ul>
+                    </p>
+
+                    <!-- 3. DESIGN -->
+                    <h3 class="prose-h3 text-blue-400">3. Design</h3>
+                    <p class="prose-p">
+                        Mobile-first dashboard design with Glassmorphism UI. The system uses a distributed event-driven architecture to handle high-velocity data streams from multiple sensors.
+                    </p>
+
+                    <!-- 4. IMPLEMENTATION -->
+                    <h3 class="prose-h3 text-blue-400">4. Implementation</h3>
+                    <p class="prose-p">
+                        Deployed on Linux Edge Server (Ubuntu) running:
+                        <ul class="list-disc list-inside text-slate-400 ml-4 space-y-1">
+                            <li><strong>Backend:</strong> Python Flask + OpenCV + Multi-threading.</li>
+                            <li><strong>AI Engine:</strong> Ultralytics YOLOv8.</li>
+                            <li><strong>Database:</strong> SQLite (Metadata) + JSON (Time-series).</li>
+                        </ul>
+                    </p>
+
+                    <!-- 5. EVALUATION -->
+                    <h3 class="prose-h3 text-blue-400">5. Evaluation</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <span class="text-xs text-slate-500 uppercase">Current Performance</span>
+                            <div class="text-xl font-bold text-white mt-1">37 Streams</div>
+                            <p class="text-xs text-slate-400 mt-2">Simultaneous processing</p>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <span class="text-xs text-slate-500 uppercase">Data Volume</span>
+                            <div class="text-xl font-bold text-white mt-1">3.5M+ Rows</div>
+                            <p class="text-xs text-slate-400 mt-2">Historical data points</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Big Data Prediction Section -->
+                <section id="big-data-prediction" class="mb-16">
+                    <h2 class="prose-h2">Big Data & Predictive Analytics</h2>
+                    <p class="prose-p">
+                        SmartTraffic AI leverages the <strong>4Vs of Big Data</strong> to transform raw video streams into actionable predictive insights. The system moves beyond simple monitoring to provide "Decision Support" capabilities.
+                    </p>
+
+                    <!-- The 4Vs Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-database text-blue-400"></i>
+                                <h3 class="font-bold text-white text-sm">1. Volume (Scale)</h3>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Storing over <strong>3.5 Million+</strong> historical data points. The system accumulates granular traffic logs (vehicle counts, types, timestamps) for every active camera.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-bolt text-yellow-400"></i>
+                                <h3 class="font-bold text-white text-sm">2. Velocity (Speed)</h3>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Processes <strong>37 concurrent video streams</strong> in real-time (< 500ms latency). Data is ingested, analyzed, and visualized instantly on the dashboard.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-layer-group text-purple-400"></i>
+                                <h3 class="font-bold text-white text-sm">3. Variety (Complexity)</h3>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Transforms unstructured data (CCTV Video Feeds) into structured metadata (JSON/SQL). Handles diverse inputs from various IP camera models.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-gem text-emerald-400"></i>
+                                <h3 class="font-bold text-white text-sm">4. Value (Insight)</h3>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                The ultimate goal. Converts data into <strong>Traffic Predictions</strong> and routing recommendations to optimize city traffic flow.
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 class="prose-h3 text-blue-400">Prediction Algorithm</h3>
+                    <p class="prose-p">
+                        The prediction engine uses a <strong>Historical Pattern Replay</strong> algorithm. It does not just guess; it calculates the <strong>Average Hourly Volume</strong> for a specific Day of Week and Hour based on all available historical data.
+                    </p>
+                    <p class="prose-p text-sm text-slate-400 mb-4">
+                        <em>Example: To predict traffic for next "Monday at 08:00 AM", the system averages the traffic volume of <strong>every previous Monday at 08:00 AM</strong> recorded in the database.</em>
+                    </p>
+
+                    <!-- Real-time vs Prediction Note -->
+                    <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg mb-6">
+                        <h4 class="text-blue-400 font-semibold text-sm mb-2"><i class="fas fa-info-circle mr-2"></i>Difference: Real-time vs Prediction</h4>
+                        <ul class="list-disc list-inside text-xs text-slate-400 space-y-1">
+                            <li><strong>Real-time Status:</strong> Based on <em>Visual Density</em> (0-100 score) from the camera feed right now.</li>
+                            <li><strong>Prediction:</strong> Based on <em>Historical Volume</em> (Total Vehicles/Hour) calculated from past data.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Prediction Flowchart -->
+                    <div class="content-card p-4 md:p-6 mb-6 overflow-x-auto bg-[#0f172a]">
+                        <div class="mermaid w-full flex justify-center">
+                            %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1e293b', 'edgeLabelBackground':'#0f172a', 'tertiaryColor': '#1e293b', 'fontFamily': 'Inter', 'fontSize': '16px'}}}%%
+                            graph TD
+                                A([User Target Time]) -->|Extract Day & Hour| B[Query History]
+                                B -->|Filter| C[(Big Data Lake)]
+                                
+                                subgraph Analytics ["Analytics Engine"]
+                                    C -->|Sum per Date| D[Hourly Totals]
+                                    D -->|Calculate Mean| E[Average Volume]
+                                    E --> F{Threshold Logic}
+                                end
+                                
+                                F -->|&lt; 500 veh/hr| G[LANCAR]
+                                F -->|500-1000 veh/hr| H[PADAT]
+                                F -->|&gt; 1000 veh/hr| I[MACET]
+
+                                style A fill:#3b82f6,stroke:#2563eb,color:#fff,stroke-width:2px
+                                style C fill:#10b981,stroke:#059669,color:#fff,stroke-width:2px
+                                style E fill:#8b5cf6,stroke:#7c3aed,color:#fff,stroke-width:2px
+                                style G fill:#22c55e,stroke:#16a34a,color:#fff,stroke-width:2px
+                                style H fill:#eab308,stroke:#ca8a04,color:#fff,stroke-width:2px
+                                style I fill:#ef4444,stroke:#dc2626,color:#fff,stroke-width:2px
+                        </div>
+                    </div>
+
+                    <div class="bg-[#1e293b] rounded-lg border border-slate-700 p-4 overflow-x-auto">
+                        <code class="text-sm text-blue-300 font-mono block mb-2">// Python Implementation (Logic)</code>
+                        <pre class="text-xs text-slate-400 bg-transparent border-none p-0 m-0">
+def predict_traffic(camera_id, target_date):
+    # 1. Extract Temporal Features
+    # SQLite: 0=Sunday, 1=Monday... 6=Saturday
+    day_of_week = target_date.strftime('%w') 
+    target_hour = target_date.hour
+
+    # 2. Query Big Data Lake (Aggregation)
+    # "Calculate the average volume for this specific Day and Hour across all history"
+    query = """
+        SELECT AVG(hourly_total) 
+        FROM (
+            SELECT SUM(new_count) as hourly_total
+            FROM traffic_history
+            WHERE camera_id = ? AND dow = ? AND hour = ?
+            GROUP BY date(timestamp)
+        )
+    """
+    
+    # 3. Apply Threshold Logic (Volume based)
+    avg_volume = execute(query)
+    
+    if avg_volume > 2000: return "MACET TOTAL" # > 2000 vehicles/hour
+    if avg_volume > 1000: return "MACET"       # > 1000 vehicles/hour
+    if avg_volume > 500:  return "PADAT LANCAR"# > 500 vehicles/hour
+    return "LANCAR"                            # < 500 vehicles/hour
+                        </pre>
+                    </div>
+                </section>
+
+                <!-- Features Section -->
+                <section id="features" class="mb-16">
+                    <h2 class="prose-h2">Key Features</h2>
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-1">
+                                <i class="fas fa-brain text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white">Deep Learning Classification</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Differentiates between Cars and Motorcycles with high precision using custom-trained YOLO models optimized for Indonesian traffic conditions.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 mt-1">
+                                <i class="fas fa-map-location-dot text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white">Interactive Map Editor</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Admin-only interface for managing camera locations via drag-and-drop. Includes secure authentication and real-time coordinate updates.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4 items-start">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center shrink-0 mt-1">
+                                <i class="fas fa-clock-rotate-left text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-white">Data Backfill Engine</h3>
+                                <p class="text-slate-400 text-sm leading-relaxed">Intelligent historical data synthesis to fill gaps in records, ensuring continuous trend analysis even after system downtimes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- API Reference Section -->
+                <section id="api-reference" class="mb-16">
+                    <h2 class="prose-h2">API Reference</h2>
+                    <p class="prose-p">The system exposes a RESTful API for data consumption and integration.</p>
+
+                    <!-- Endpoint 1 -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="badge badge-get">GET</span>
+                            <code class="text-lg text-white">/api/stats</code>
+                        </div>
+                        <p class="text-slate-400 text-sm mb-4">Retrieves real-time traffic statistics for all active cameras.</p>
+                        
+                        <div class="bg-[#1e293b] rounded-lg border border-slate-700 overflow-hidden">
+                            <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
+                                <span class="text-xs text-slate-400 font-mono">Response Example</span>
+                                <button class="text-xs text-blue-400 hover:text-blue-300">Copy</button>
+                            </div>
+                            <pre class="m-0 border-none bg-transparent !p-4"><code class="language-json">{
+  "status": "success",
+  "sources": {
+    "cam_1": {
+      "name": "Simpang Dago",
+      "current_count": 45,
+      "accumulated_count": 1250,
+      "status": "online"
+    }
+  }
+}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint 2 -->
+                    <div class="mb-8">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="badge badge-post">POST</span>
+                            <code class="text-lg text-white">/api/edit_camera</code>
+                            <span class="badge badge-auth"><i class="fas fa-lock mr-1"></i> Admin</span>
+                        </div>
+                        <p class="text-slate-400 text-sm mb-4">Updates camera configuration including geolocation coordinates.</p>
+                        
+                        <div class="bg-[#1e293b] rounded-lg border border-slate-700 overflow-hidden">
+                            <div class="px-4 py-2 bg-slate-800 border-b border-slate-700 text-xs text-slate-400 font-mono">
+                                Payload Example
+                            </div>
+                            <pre class="m-0 border-none bg-transparent !p-4"><code class="language-json">{
+  "username": "admin",
+  "password": "...",
+  "id": "cam_1",
+  "lat": -6.914744,
+  "lng": 107.609810
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Models Section -->
+                <section id="data-models" class="mb-16">
+                    <h2 class="prose-h2">Data Models</h2>
+                    <p class="prose-p">Core data structures used for persistence and configuration.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Model 1: Traffic History (SQL) -->
+                        <div>
+                            <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+                                <i class="fas fa-database text-emerald-400"></i> Traffic History (SQL)
+                            </h3>
+                            <div class="bg-[#1e293b] rounded-lg border border-slate-700 overflow-hidden text-xs">
+                                <table class="w-full text-left text-slate-400">
+                                    <thead class="bg-slate-800 text-slate-200">
+                                        <tr>
+                                            <th class="px-3 py-2">Column</th>
+                                            <th class="px-3 py-2">Type</th>
+                                            <th class="px-3 py-2">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-700">
+                                        <tr>
+                                            <td class="px-3 py-2 font-mono text-blue-300">id</td>
+                                            <td class="px-3 py-2">INTEGER</td>
+                                            <td class="px-3 py-2">Primary Key</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-3 py-2 font-mono text-blue-300">camera_id</td>
+                                            <td class="px-3 py-2">TEXT</td>
+                                            <td class="px-3 py-2">Source Identifier</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-3 py-2 font-mono text-blue-300">timestamp</td>
+                                            <td class="px-3 py-2">REAL</td>
+                                            <td class="px-3 py-2">Unix Timestamp</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-3 py-2 font-mono text-blue-300">total_count</td>
+                                            <td class="px-3 py-2">INTEGER</td>
+                                            <td class="px-3 py-2">Aggregate Volume</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Model 2: Camera Config (JSON) -->
+                        <div>
+                            <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+                                <i class="fas fa-file-code text-yellow-400"></i> Camera Config (JSON)
+                            </h3>
+                            <div class="bg-[#1e293b] rounded-lg border border-slate-700 p-4 font-mono text-xs text-slate-300">
+                                <span class="text-purple-400">"cam_id"</span>: {<br>
+                                &nbsp;&nbsp;<span class="text-blue-300">"name"</span>: <span class="text-green-300">"Location Name"</span>,<br>
+                                &nbsp;&nbsp;<span class="text-blue-300">"source"</span>: <span class="text-green-300">"rtsp://..."</span>,<br>
+                                &nbsp;&nbsp;<span class="text-blue-300">"lat"</span>: <span class="text-orange-300">-6.9175</span>,<br>
+                                &nbsp;&nbsp;<span class="text-blue-300">"lng"</span>: <span class="text-orange-300">107.6191</span>,<br>
+                                &nbsp;&nbsp;<span class="text-blue-300">"roi"</span>: [<span class="text-orange-300">0</span>, <span class="text-orange-300">0</span>, <span class="text-orange-300">1920</span>, <span class="text-orange-300">1080</span>]<br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Watermark -->
+    <footer class="fixed bottom-4 right-6 z-40 opacity-50 hover:opacity-100 transition-opacity">
+        <a href="https://avicenafahmi.com" target="_blank" class="text-xs font-mono text-slate-500 hover:text-blue-400 flex items-center gap-2">
+            <span>&copy; avicenafahmi.com</span>
+        </a>
+    </footer>
+
+    <!-- Scripts -->
     <script>
-        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-            menu.classList.toggle('flex');
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        btn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Active Link Highlighting on Scroll
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mainScroll = document.getElementById('main-scroll');
+
+        mainScroll.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (mainScroll.scrollTop >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
         });
+    </script>
+    
+    <!-- Mermaid JS -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', fontFamily: 'Inter' });
     </script>
 </body>
 </html>

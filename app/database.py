@@ -143,3 +143,100 @@ def predict_future_traffic(camera_id, day_of_week, hour_of_day):
         conn.close()
     
     return avg_traffic
+
+def get_total_lifetime():
+    conn = get_db_connection()
+    c = conn.cursor()
+    try:
+        c.execute("""
+            SELECT 
+                COALESCE(SUM(new_count), 0) as total,
+                COALESCE(SUM(new_cars), 0) as cars,
+                COALESCE(SUM(new_motors), 0) as motors
+            FROM traffic_history
+        """)
+        row = c.fetchone()
+        return {
+            "accumulated_count": row["total"] if row and "total" in row.keys() else 0,
+            "cars": row["cars"] if row and "cars" in row.keys() else 0,
+            "motorcycles": row["motors"] if row and "motors" in row.keys() else 0,
+        }
+    except Exception:
+        return {"accumulated_count": 0, "cars": 0, "motorcycles": 0}
+    finally:
+        conn.close()
+
+def get_aggregated_stats(days=30):
+    """
+    Get aggregated stats for the last N days.
+    """
+    conn = get_db_connection()
+    c = conn.cursor()
+    try:
+        cutoff = time.time() - (days * 24 * 3600)
+        c.execute("""
+            SELECT 
+                COALESCE(SUM(new_count), 0) as total,
+                COALESCE(SUM(new_cars), 0) as cars,
+                COALESCE(SUM(new_motors), 0) as motors
+            FROM traffic_history
+            WHERE timestamp >= ?
+        """, (cutoff,))
+        row = c.fetchone()
+        return {
+            "accumulated_count": row["total"] if row else 0,
+            "cars": row["cars"] if row else 0,
+            "motorcycles": row["motors"] if row else 0,
+        }
+    except Exception as e:
+        print(f"Error getting aggregated stats: {e}")
+        return {"accumulated_count": 0, "cars": 0, "motorcycles": 0}
+    finally:
+        conn.close()
+
+def get_history_range(camera_id=None, start_ts=None, end_ts=None):
+    """
+    Fetch history rows across cameras within optional time range.
+    Returns list of dicts including camera_id.
+    """
+    conn = get_db_connection()
+    c = conn.cursor()
+    try:
+        conditions = []
+        params = []
+        if camera_id:
+            conditions.append("camera_id = ?")
+            params.append(camera_id)
+        if start_ts:
+            conditions.append("timestamp >= ?")
+            params.append(start_ts)
+        if end_ts:
+            conditions.append("timestamp <= ?")
+            params.append(end_ts)
+        where_clause = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        query = f"""
+            SELECT camera_id, timestamp, total_count, car_count, motorcycle_count,
+                   new_count, new_cars, new_motors
+            FROM traffic_history
+            {where_clause}
+            ORDER BY camera_id, timestamp ASC
+        """
+        c.execute(query, params)
+        rows = c.fetchall()
+        return [
+            {
+                "camera_id": row["camera_id"],
+                "ts": row["timestamp"],
+                "count": row["total_count"],
+                "cars": row["car_count"],
+                "motors": row["motorcycle_count"],
+                "new_count": row["new_count"],
+                "new_cars": row["new_cars"],
+                "new_motors": row["new_motors"],
+            }
+            for row in rows
+        ]
+    except Exception:
+        return []
+    finally:
+        conn.close()

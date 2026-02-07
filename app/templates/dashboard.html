@@ -197,21 +197,8 @@
     <!-- Navbar -->
     <nav class="glass-panel mb-8 px-6 py-4 sticky top-4 z-50 shadow-2xl shadow-black/20">
         <div class="flex flex-wrap justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 border border-white/10">
-                    <i class="fas fa-network-wired text-white text-xl"></i>
-                </div>
-                <div class="hidden md:block">
-                    <h1 class="text-2xl font-bold text-white tracking-tight">
-                        SmartTraffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI</span>
-                    </h1>
-                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span>System Online</span>
-                        <span class="text-slate-600">|</span>
-                        <span class="text-blue-400 font-medium">Data Lake Active</span>
-                    </div>
-                </div>
+            <div class="flex items-center">
+                <img src="/static/img/logo.png" alt="SmartTraffic AI Logo" class="h-14 w-auto rounded-lg shadow-lg shadow-blue-500/20 border border-white/10">
             </div>
 
             <!-- Mobile Menu Button -->
@@ -259,15 +246,15 @@
                 <div class="absolute right-0 top-0 p-4 opacity-10">
                     <i class="fas fa-globe text-6xl"></i>
                 </div>
-                <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Traffic (All Cameras)</p>
+                <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Traffic (Last 30 Days)</p>
                 <h2 class="text-5xl font-bold text-white mt-2" id="global-total">0</h2>
-                <p class="text-xs text-gray-500 mt-2">Accumulated Count</p>
+                <p class="text-xs text-gray-500 mt-2">Monthly Count</p>
             </div>
 
             <!-- Total Cars -->
             <div class="glass-panel p-6 border-l-4 border-green-500">
                 <div class="flex justify-between items-start">
-                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Cars</p>
+                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Monthly Cars</p>
                     <i class="fas fa-car text-green-500/20 text-2xl"></i>
                 </div>
                 <h2 class="text-4xl font-bold text-white mt-2" id="global-cars">0</h2>
@@ -280,7 +267,7 @@
             <!-- Total Motorcycles -->
             <div class="glass-panel p-6 border-l-4 border-yellow-500">
                 <div class="flex justify-between items-start">
-                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Total Motorcycles</p>
+                    <p class="text-sm text-gray-400 uppercase tracking-wider font-semibold">Monthly Motorcycles</p>
                     <i class="fas fa-motorcycle text-yellow-500/20 text-2xl"></i>
                 </div>
                 <h2 class="text-4xl font-bold text-white mt-2" id="global-motors">0</h2>
@@ -301,6 +288,12 @@
             <!-- Edit Map Button -->
             <button onclick="toggleEditMode()" id="edit-map-btn" class="absolute top-8 right-8 z-[400] bg-slate-800/90 text-white p-2 rounded-lg border border-slate-600 shadow-lg hover:bg-indigo-600 hover:border-indigo-500 transition-all" title="Edit Map Layout">
                 <i class="fas fa-lock text-gray-400" id="edit-map-icon"></i>
+            </button>
+
+            <!-- Vehicle Mode Toggle -->
+            <button onclick="toggleVehicleMode()" id="vehicle-mode-btn" class="absolute top-20 right-8 z-[400] bg-slate-800/90 text-white p-2 rounded-lg border border-slate-600 shadow-lg hover:bg-blue-600 hover:border-blue-500 transition-all flex items-center gap-2" title="Ganti Mode Kendaraan">
+                <i class="fas fa-car" id="vehicle-mode-icon"></i>
+                <span class="text-xs font-bold hidden md:inline" id="vehicle-mode-text">Mobil</span>
             </button>
 
             <!-- Prediction Mode Indicator (Hidden by default) -->
@@ -346,6 +339,9 @@
 
     </div>
 
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[2000] flex flex-col gap-2"></div>
+
     <script>
         // Mobile Menu Toggle
         document.getElementById('mobile-menu-btn').addEventListener('click', function() {
@@ -353,6 +349,57 @@
             menu.classList.toggle('hidden');
             menu.classList.toggle('flex');
         });
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-800';
+            let icon = 'fa-info-circle';
+            let textClass = 'text-white';
+            
+            if (type === 'success') {
+                bgClass = 'bg-green-600';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-600';
+                icon = 'fa-exclamation-circle';
+            } else if (type === 'loading') {
+                bgClass = 'bg-blue-600';
+                icon = 'fa-spinner fa-spin';
+            }
+            
+            toast.className = `${bgClass} ${textClass} px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 min-w-[250px] border border-white/10`;
+            toast.innerHTML = `
+                <i class="fas ${icon} text-lg"></i>
+                <span class="font-medium text-sm">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+            
+            // Auto remove if not loading
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    hideToast(toast);
+                }, 4000);
+            }
+            
+            return toast;
+        }
+
+        function hideToast(element) {
+            if (!element) return;
+            element.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => {
+                if (element.parentNode) element.parentNode.removeChild(element);
+            }, 300);
+        }
 
         // Global Map State
         let map;
@@ -642,6 +689,21 @@
                     menu.remove();
                 };
                 
+                // Divider
+                const divider = document.createElement('div');
+                divider.style.cssText = 'height:1px; background:#334155; margin:4px 0;';
+                
+                // Vehicle Type Selection
+                const vehicleItem = document.createElement('div');
+                vehicleItem.className = 'custom-context-menu-item';
+                const isCar = currentVehicleType !== 'bike';
+                vehicleItem.innerHTML = `<i class="fas ${isCar ? 'fa-car' : 'fa-motorcycle'} ${isCar ? 'text-blue-400' : 'text-yellow-400'} mr-2"></i> Mode: ${isCar ? 'Mobil (Tol/Raya)' : 'Motor (Non-Tol)'}`;
+                vehicleItem.onclick = (ev) => {
+                    ev.stopPropagation(); 
+                    toggleVehicleMode();
+                    menu.remove();
+                };
+
                 // Option: Clear Route
                 const clearItem = document.createElement('div');
                 clearItem.className = 'custom-context-menu-item';
@@ -653,6 +715,8 @@
 
                 menu.appendChild(startItem);
                 menu.appendChild(endItem);
+                menu.appendChild(divider);
+                menu.appendChild(vehicleItem);
                 
                 if (typeof manualStartPoint !== 'undefined' && (manualStartPoint || manualEndPoint || routingControl)) {
                     menu.appendChild(clearItem);
@@ -698,11 +762,28 @@
             marker.setIcon(L.divIcon({ className: '', html: html, iconSize: [size, size], iconAnchor: [size/2, size/2] }));
         }
 
+        // Global helper for route selection
+        window.selectRoute = function(index) {
+            // Try to click the corresponding itinerary container in the control panel
+            const alts = document.querySelectorAll('.leaflet-routing-alt');
+            if (alts && alts[index]) {
+                alts[index].click();
+                // Visual feedback
+                alts[index].style.backgroundColor = '#e0f2fe'; // light blue highlight
+                setTimeout(() => alts[index].style.backgroundColor = '', 1000);
+            } else {
+                // Fallback if control panel is hidden or structure differs
+                alert(`Silakan klik pada garis Rute ${index+1} di peta untuk mengaktifkannya.`);
+            }
+        };
+
         function renderDashboard(data) {
             // 1. Update Global Stats
-            const total = data.global_total.accumulated_count;
-            const cars = data.global_total.cars;
-            const motors = data.global_total.motorcycles;
+            // Use Monthly stats if available (from optimized endpoint), otherwise fallback
+            const stats = data.global_monthly || data.global_total_lifetime || data.global_total;
+            const total = stats.accumulated_count;
+            const cars = stats.cars;
+            const motors = stats.motorcycles;
 
             document.getElementById('global-total').innerText = total.toLocaleString();
             document.getElementById('global-cars').innerText = cars.toLocaleString();
@@ -727,25 +808,28 @@
                      let congestionStatus = "UNKNOWN";
                      let congestionColor = "#94a3b8"; // Default Gray
                      let trafficValue = s.current_count || 0;
-                     let isOffline = (s.status === 'offline');
+                     let isOffline = false; // (s.status === 'offline');
                      
                      // Check if stale data (older than 30s)
                      const nowTs = Date.now() / 1000;
-                     if (s.last_update && (nowTs - s.last_update > 30)) {
-                        isOffline = true;
-                     }
+                     // if (s.last_update && (nowTs - s.last_update > 30)) {
+                     //    isOffline = true;
+                     // }
 
                      if (isOffline) {
                          congestionStatus = "OFFLINE";
                          congestionColor = "#64748b"; // Slate 500
-                     } else if (trafficValue <= 15) {
-                         congestionStatus = "SEPI";
+                     } else if (trafficValue <= 10) {
+                         congestionStatus = "LANCAR";
                          congestionColor = "#22c55e"; // Green
-                     } else if (trafficValue <= 35) {
-                         congestionStatus = "SEDANG";
+                     } else if (trafficValue <= 25) {
+                         congestionStatus = "PADAT LANCAR";
                          congestionColor = "#eab308"; // Yellow
+                     } else if (trafficValue <= 45) {
+                         congestionStatus = "MACET";
+                         congestionColor = "#f97316"; // Orange
                      } else {
-                         congestionStatus = "RAMAI";
+                         congestionStatus = "MACET TOTAL";
                          congestionColor = "#ef4444"; // Red
                      }
                      
@@ -755,7 +839,8 @@
                      // Store status for routing
                      markers[sourceId].options.congestionStatus = congestionStatus;
                      markers[sourceId].options.congestionLevel = trafficValue;
-
+                     
+                     // ... existing popup update ...
                      markers[sourceId].setPopupContent(`
                         <div style="color:#333; font-family:sans-serif; min-width:160px;">
                             <div style="font-weight:bold; color:#4f46e5; margin-bottom:4px; font-size:14px;">${s.name}</div>
@@ -787,6 +872,12 @@
                      `);
                  }
             });
+
+            // Trigger routing update if active (Real-time Re-routing based on congestion)
+            if (typeof routingControl !== 'undefined' && routingControl) {
+                 // Force re-calculation to apply new congestion speeds
+                 routingControl.route();
+            }
 
             // 2. Render Camera Grid
             const grid = document.getElementById('camera-grid');
@@ -820,11 +911,11 @@
                 const cMotors = stats.accumulated_class_counts['1'] || stats.accumulated_class_counts['3'] || 0; // 1 is Motorcycle
                 
                 // Determine Status
-                let isOffline = (stats.status === 'offline');
+                let isOffline = false; // (stats.status === 'offline');
                 const nowTs = Date.now() / 1000;
-                if (stats.last_update && (nowTs - stats.last_update > 30)) {
-                    isOffline = true;
-                }
+                // if (stats.last_update && (nowTs - stats.last_update > 30)) {
+                //     isOffline = true;
+                // }
                 
                 let statusHtml = `
                     <div class="flex items-center gap-2">
@@ -942,10 +1033,72 @@
         let manualStartMarker = null;
         let manualEndMarker = null;
 
-        function startRouting(startLat, startLng, destLat, destLng) {
+        let currentVehicleType = 'car'; // 'car' or 'bike'
+
+        function toggleVehicleMode() {
+            const isCar = (currentVehicleType === 'car');
+            currentVehicleType = isCar ? 'bike' : 'car';
+            updateVehicleModeUI();
+            
+            // Restart routing if active
+            let routed = false;
+            if (routingControl) {
+                const waypoints = routingControl.getWaypoints();
+                if (waypoints && waypoints.length >= 2) {
+                    const start = waypoints[0].latLng;
+                    const end = waypoints[waypoints.length - 1].latLng;
+                    if (start && end) {
+                        startRouting(start.lat, start.lng, end.lat, end.lng);
+                        routed = true;
+                    }
+                }
+            }
+            
+            if (!routed) {
+                if (manualStartPoint && manualEndPoint) {
+                     startRouting(manualStartPoint.lat, manualStartPoint.lng, manualEndPoint.lat, manualEndPoint.lng);
+                } else {
+                     const typeName = currentVehicleType === 'bike' ? 'Motor' : 'Mobil';
+                     showToast(`Mode kendaraan: ${typeName}`, 'success');
+                }
+            }
+        }
+
+        function updateVehicleModeUI() {
+            const btn = document.getElementById('vehicle-mode-btn');
+            const icon = document.getElementById('vehicle-mode-icon');
+            const text = document.getElementById('vehicle-mode-text');
+            
+            if (currentVehicleType === 'car') {
+                icon.className = 'fas fa-car text-blue-400';
+                text.innerText = 'Mobil';
+                btn.classList.remove('hover:bg-yellow-600', 'hover:border-yellow-500');
+                btn.classList.add('hover:bg-blue-600', 'hover:border-blue-500');
+            } else {
+                icon.className = 'fas fa-motorcycle text-yellow-400';
+                text.innerText = 'Motor';
+                btn.classList.remove('hover:bg-blue-600', 'hover:border-blue-500');
+                btn.classList.add('hover:bg-yellow-600', 'hover:border-yellow-500');
+            }
+        }
+
+        function startRouting(startLat, startLng, destLat, destLng, onComplete = null) {
             if (routingControl) {
                 map.removeControl(routingControl);
             }
+
+            const loadingToast = showToast("Menghitung rute terbaik...", "loading");
+            
+            // Safety timeout to clear loading state if OSRM hangs
+            const safetyTimeout = setTimeout(() => {
+                hideToast(loadingToast);
+                showToast("Waktu permintaan habis (Rute). Silakan coba lagi.", "error");
+                
+                if (window.isRoutingInProgress) {
+                    window.isRoutingInProgress = false;
+                }
+                if (onComplete) onComplete();
+            }, 35000); // 35s (slightly longer than OSRM timeout)
 
             try {
                 routingControl = L.Routing.control({
@@ -953,6 +1106,11 @@
                         L.latLng(startLat, startLng),
                         L.latLng(destLat, destLng)
                     ],
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1',
+                        profile: currentVehicleType === 'bike' ? 'bike' : 'car', // Use 'bike' as proxy for motorcycle (non-toll)
+                        timeout: 30000 // 30s timeout
+                    }),
                     routeWhileDragging: true,
                     geocoder: L.Control.Geocoder.nominatim(),
                     showAlternatives: true,
@@ -988,65 +1146,71 @@
                     }
                 })
                 .on('routesfound', function(e) {
+                      clearTimeout(safetyTimeout);
+                      hideToast(loadingToast);
+                      if (onComplete) onComplete();
+                      
                       const routes = e.routes;
-                      let comparisonHTML = '<div style="font-size:14px; font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:4px;">Analisis Lalu Lintas</div>';
+                      let comparisonHTML = `<div style="font-size:14px; font-weight:bold; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                          <span>Analisis Lalu Lintas</span>
+                          <span style="font-size:10px; background:${currentVehicleType === 'bike' ? '#f59e0b' : '#3b82f6'}; padding:2px 6px; border-radius:4px;">${currentVehicleType === 'bike' ? 'Motor' : 'Mobil'}</span>
+                      </div>`;
                       let bestRouteIndex = 0;
                       let minTotalTime = Infinity;
 
-                      // Identify congested zones from markers
-                      const congestedZones = [];
+                      const STATUS_SPEED = {
+                        'LANCAR': currentVehicleType === 'bike' ? 40 : 32, // Motor usually faster in traffic
+                        'PADAT LANCAR': currentVehicleType === 'bike' ? 30 : 24,
+                        'MACET': currentVehicleType === 'bike' ? 15 : 12,
+                        'MACET TOTAL': 5
+                      };
+                      const BASE_SPEED = currentVehicleType === 'bike' ? 35 : 30;
+                      const COVERAGE_M = 250;
+                      const zones = [];
                       for (let id in markers) {
-                          const status = markers[id].options.congestionStatus;
-                          if (status === 'RAMAI' || status === 'SEDANG') {
-                              const density = markers[id].options.congestionLevel || (status === 'RAMAI' ? 20 : 10);
-                              
-                              let delayMinutes;
-                              if (status === 'RAMAI') {
-                                  // Macet Parah: Delay signifikan
-                                  delayMinutes = Math.max(5, Math.round(density / 5));
-                              } else { 
-                                  // Padat Merayap (Sedang): Delay moderat
-                                  delayMinutes = Math.max(2, Math.round(density / 8)); 
-                              }
-
-                              congestedZones.push({
-                                  latlng: markers[id].getLatLng(),
-                                  delay: delayMinutes,
-                                  name: markers[id].getPopup().getContent().match(/<b>(.*?)<\/b>/)?.[1] || 'Unknown Area',
-                                  status: status // Track status for UI
-                              });
-                          }
+                        const status = markers[id].options.congestionStatus || 'LANCAR';
+                        const speed = STATUS_SPEED[status] || BASE_SPEED;
+                        zones.push({
+                          latlng: markers[id].getLatLng(),
+                          speed,
+                          name: markers[id].getPopup().getContent().match(/<b>(.*?)<\/b>/)?.[1] || 'Unknown Area',
+                          status
+                        });
                       }
+
+                      const formatTime = (minutes) => {
+                          if (minutes <= 60) return `${minutes} mnt`;
+                          const h = Math.floor(minutes / 60);
+                          const m = minutes % 60;
+                          return m > 0 ? `${h} jam ${m} mnt` : `${h} jam`;
+                      };
  
-                      // Check each route
                       routes.forEach((route, i) => {
-                          let routeDelay = 0;
-                          let congestedAreas = new Set();
-                          
-                          if (congestedZones.length > 0) {
-                              const routeCoords = route.coordinates;
-                              for (let j = 0; j < routeCoords.length; j += 10) { 
-                                  const pt = L.latLng(routeCoords[j]);
-                                  for (let zone of congestedZones) {
-                                      if (pt.distanceTo(zone.latlng) < 200) {
-                                          if (!congestedAreas.has(zone.name)) {
-                                              congestedAreas.add(zone.name);
-                                              routeDelay += zone.delay;
-                                          }
-                                      }
+                          const coords = route.coordinates;
+                          let totalSeconds = 0;
+                          let affectedAreas = new Set();
+                          for (let j = 0; j < coords.length - 1; j++) {
+                              const a = L.latLng(coords[j]);
+                              const b = L.latLng(coords[j+1]);
+                              const segLenM = a.distanceTo(b);
+                              let segSpeedKmh = BASE_SPEED;
+                              for (let z of zones) {
+                                  const mid = L.latLng((a.lat + b.lat)/2, (a.lng + b.lng)/2);
+                                  if (mid.distanceTo(z.latlng) <= COVERAGE_M) {
+                                      segSpeedKmh = Math.min(segSpeedKmh, z.speed);
+                                      affectedAreas.add(z.name);
                                   }
                               }
+                              const segSpeedMps = (segSpeedKmh * 1000) / 3600;
+                              totalSeconds += segLenM / Math.max(segSpeedMps, 0.1);
                           }
-                          
-                          // Calculate Total Time
                           const baseTimeMinutes = Math.round(route.summary.totalTime / 60);
-                          const totalTimeMinutes = baseTimeMinutes + routeDelay;
-                          
-                          route.summary.totalTime = totalTimeMinutes * 60; 
-
-                          const color = routeDelay > 0 ? '#ef4444' : '#10b981';
-                          const icon = routeDelay > 0 ? 'fa-traffic-light' : 'fa-road';
-                          route.isCongested = routeDelay > 0;
+                          const totalTimeMinutes = Math.round(totalSeconds / 60);
+                          route.summary.totalTime = totalTimeMinutes * 60;
+                          const isAffected = affectedAreas.size > 0 && totalTimeMinutes > baseTimeMinutes;
+                          const color = isAffected ? '#ef4444' : '#10b981';
+                          const icon = isAffected ? 'fa-traffic-light' : 'fa-road';
+                          route.isCongested = isAffected;
                           
                           comparisonHTML += `
                             <div style="margin-bottom:8px; padding:8px; background:rgba(255,255,255,0.05); rounded:4px; border-left:4px solid ${color};">
@@ -1055,9 +1219,9 @@
                                     <span style="color:${color};"><i class="fas ${icon}"></i></span>
                                 </div>
                                 <div style="font-size:12px; margin-top:4px;">
-                                    <div>Estimasi Normal: ${baseTimeMinutes} mnt</div>
-                                    ${routeDelay > 0 ? `<div style="color:#f87171; font-weight:bold;">+${routeDelay} mnt (Kepadatan di ${Array.from(congestedAreas).join(', ')})</div>` : ''}
-                                    <div style="font-size:13px; font-weight:bold; margin-top:2px;">Total: ${totalTimeMinutes} mnt</div>
+                                    <div>Estimasi Normal: ${formatTime(baseTimeMinutes)}</div>
+                                    ${isAffected ? `<div style="color:#f87171; font-weight:bold;">Disesuaikan: +${totalTimeMinutes - baseTimeMinutes} mnt (Zona: ${Array.from(affectedAreas).join(', ')})</div>` : ''}
+                                    <div style="font-size:13px; font-weight:bold; margin-top:2px;">Total: ${formatTime(totalTimeMinutes)}</div>
                                 </div>
                             </div>
                           `;
@@ -1073,6 +1237,9 @@
                           comparisonHTML += `
                             <div style="margin-top:8px; padding:8px; background:#10b981; color:white; border-radius:4px; font-size:12px; font-weight:bold; animation: pulse 2s infinite;">
                                 <i class="fas fa-lightbulb"></i> Rekomendasi: Pilih Rute ${bestRouteIndex+1} untuk hemat waktu!
+                                <button onclick="window.selectRoute(${bestRouteIndex})" style="margin-top:6px; width:100%; background:white; color:#10b981; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                                    <i class="fas fa-check-circle"></i> Gunakan Rute Ini
+                                </button>
                             </div>
                           `;
                       } else if (minTotalTime === Infinity) {
@@ -1102,6 +1269,13 @@
 
                       document.getElementById('map').parentElement.style.position = 'relative'; 
                       document.getElementById('map').appendChild(alertDiv);
+                  })
+                  .on('routingerror', function(e) {
+                      clearTimeout(safetyTimeout);
+                      hideToast(loadingToast);
+                      if (onComplete) onComplete();
+                      console.error("Routing error:", e);
+                      showToast("Gagal mengambil rute. Server sibuk atau koneksi terputus.", "error");
                   })
                   .on('routeselected', function(e) {
                        const route = e.route;
@@ -1139,14 +1313,57 @@
         }
 
         function getDirections(destLat, destLng) {
+            // Check if another routing is in progress
+            if (window.isRoutingInProgress) {
+                showToast("Sedang memproses permintaan sebelumnya...", "info");
+                return;
+            }
+            window.isRoutingInProgress = true;
+
+            const loadingToast = showToast("Mencari lokasi Anda... (Max 20dtk)", "loading");
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
-                    startRouting(position.coords.latitude, position.coords.longitude, destLat, destLng);
-                }, () => {
-                    alert("Unable to retrieve your location for directions.");
+                    hideToast(loadingToast);
+                    // Pass a callback to clear the flag when done
+                    startRouting(position.coords.latitude, position.coords.longitude, destLat, destLng, () => {
+                        window.isRoutingInProgress = false;
+                    });
+                }, (err) => {
+                    window.isRoutingInProgress = false;
+                    hideToast(loadingToast);
+                    console.error("Geolocation Error:", err);
+                    
+                    let msg = "Gagal mendapatkan lokasi.";
+                    let hint = "Pastikan GPS aktif.";
+                    
+                    if (err.code === 1) {
+                        msg = "Izin lokasi ditolak.";
+                        hint = "Izinkan akses lokasi di browser.";
+                    } else if (err.code === 2) {
+                        msg = "Lokasi tidak tersedia.";
+                        hint = "Coba lagi nanti atau gunakan WiFi.";
+                    } else if (err.code === 3) {
+                        msg = "Waktu permintaan habis.";
+                        hint = "Sinyal GPS lemah.";
+                    }
+                    
+                    showToast(`${msg} ${hint}`, "error");
+                    
+                    // Fallback suggestion
+                    setTimeout(() => {
+                         showToast("Tips: Klik kanan pada peta untuk 'Set Titik Awal' secara manual.", "info");
+                    }, 2000);
+                    
+                }, {
+                    timeout: 20000, // Increased to 20s
+                    enableHighAccuracy: true,
+                    maximumAge: 0
                 });
             } else {
-                alert("Geolocation is not supported by this browser.");
+                window.isRoutingInProgress = false;
+                hideToast(loadingToast);
+                showToast("Geolocation tidak didukung browser ini.", "error");
             }
         }
 
@@ -1257,6 +1474,15 @@
                     <p class="text-xs text-gray-500 mt-2"><i class="fas fa-info-circle mr-1"></i> Prediction is based on historical patterns (Day of Week + Hour).</p>
                 </div>
                 
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <button onclick="runPrediction('high_traffic')" class="bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-300 py-2 rounded-lg text-xs font-bold transition-colors">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> SIMULATE CONGESTION
+                    </button>
+                    <button onclick="runPrediction('low_traffic')" class="bg-green-900/30 hover:bg-green-900/50 border border-green-800 text-green-300 py-2 rounded-lg text-xs font-bold transition-colors">
+                        <i class="fas fa-car-side mr-1"></i> SIMULATE CLEAR FLOW
+                    </button>
+                </div>
+
                 <button onclick="runPrediction()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-purple-500/20 transition-all transform hover:scale-[1.02]">
                     <i class="fas fa-magic mr-2"></i> Generate Prediction
                 </button>
@@ -1315,7 +1541,9 @@
             runPrediction();
         }
 
-        async function runPrediction() {
+        // Network Lines Functions Removed
+
+        async function runPrediction(scenario = null) {
             const timeVal = document.getElementById('predictTime').value;
             if (!timeVal) return alert("Please select a date and time");
             
@@ -1338,7 +1566,10 @@
                 const response = await fetch('/api/predict_traffic', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ target_time: formattedTime })
+                    body: JSON.stringify({ 
+                        target_time: formattedTime,
+                        force_scenario: scenario
+                    })
                 });
                 const data = await response.json();
                 
@@ -1391,14 +1622,24 @@
 
                     // Switch to Map View
                     isPredictionMode = true;
+                    
+                    let maxSeverity = -1;
+                    let worstCamId = null;
+                    const severityMap = {
+                        'MACET TOTAL': 3,
+                        'MACET': 2,
+                        'PADAT LANCAR': 1,
+                        'LANCAR': 0
+                    };
+
                     if (data.predictions && data.predictions.length > 0) {
                         data.predictions.forEach(pred => {
                             if (markers[pred.camera_id]) {
                                 const marker = markers[pred.camera_id];
                                 let color = '#22c55e';
-                                if (pred.traffic_status === 'MACET PARAH') color = '#dc2626';
-                                else if (pred.traffic_status === 'RAMAI') color = '#ef4444';
-                                else if (pred.traffic_status === 'SEDANG') color = '#eab308';
+                                if (pred.traffic_status === 'MACET TOTAL') color = '#ef4444'; // Red
+                                else if (pred.traffic_status === 'MACET') color = '#f97316'; // Orange
+                                else if (pred.traffic_status === 'PADAT LANCAR') color = '#eab308'; // Yellow
                                 
                                 setMarkerColor(marker, color);
                                 
@@ -1424,15 +1665,40 @@
                                         </div>
                                     </div>
                                 `);
+                                
+                                // Check for worst traffic
+                                const currentSeverity = severityMap[pred.traffic_status] || 0;
+                                if (currentSeverity > maxSeverity) {
+                                    maxSeverity = currentSeverity;
+                                    worstCamId = pred.camera_id;
+                                }
                             }
                         });
                     }
 
+                    // Network lines removed
+
                     document.getElementById('prediction-time-display').innerText = formattedTime;
                     document.getElementById('prediction-mode-indicator').classList.remove('hidden');
+                    
+                    // Close modal
                     document.getElementById('predictiveModal').classList.add('hidden');
                     document.getElementById('predictiveModal').classList.remove('flex');
-                    document.getElementById('map').scrollIntoView({behavior: 'smooth', block: 'center'});
+                    
+                    // We don't need to scroll to map if we used fitBounds in drawNetworkLines
+                    // document.getElementById('map').scrollIntoView({behavior: 'smooth', block: 'center'});
+
+                    // Open popup for the most critical area without over-zooming
+                    if (worstCamId && markers[worstCamId]) {
+                        setTimeout(() => {
+                            // Just open the popup, let the fitBounds from drawNetworkLines handle the view
+                            // Or optionally pan to it if we want to center it but keep the zoom
+                            // map.panTo(markers[worstCamId].getLatLng()); 
+                            markers[worstCamId].openPopup();
+                            
+                            showToast(`Lokasi Terpadat: ${markers[worstCamId].getPopup().getContent().match(/<b>(.*?)<\/b>/)?.[1] || 'Unknown'}`, 'error');
+                        }, 1000);
+                    }
 
                 } else {
                     alert('Error: ' + data.message);
@@ -1577,5 +1843,12 @@
             }
         }
     </script>
+
+    <!-- Footer Watermark -->
+    <footer class="fixed bottom-4 right-6 z-40 opacity-50 hover:opacity-100 transition-opacity">
+        <a href="https://avicenafahmi.com" target="_blank" class="text-xs font-mono text-slate-500 hover:text-blue-400 flex items-center gap-2">
+            <span>&copy; avicenafahmi.com</span>
+        </a>
+    </footer>
 </body>
 </html>

@@ -14,10 +14,32 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tech-border {
+            position: relative;
+        }
+        .tech-border::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 0.75rem;
+            padding: 1px;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.3), rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .hud-grid {
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
         .live-indicator {
             display: inline-block;
@@ -32,6 +54,21 @@
             70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+        /* Custom Scrollbar for Camera List */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-6">
@@ -39,21 +76,8 @@
     <!-- Navbar -->
     <nav class="glass-panel mb-8 px-6 py-4 sticky top-4 z-50 shadow-2xl shadow-black/20">
         <div class="flex flex-wrap justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-white/10">
-                    <i class="fas fa-video text-white text-xl"></i>
-                </div>
-                <div class="hidden md:block">
-                    <h1 class="text-2xl font-bold text-white tracking-tight">
-                        SmartTraffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI</span>
-                    </h1>
-                    <div class="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                        <span>Live Monitor</span>
-                        <span class="text-slate-600">|</span>
-                        <span class="text-gray-400">Real-time Detection</span>
-                    </div>
-                </div>
+            <div class="flex items-center">
+                <img src="/static/img/logo.png" alt="SmartTraffic AI Logo" class="h-14 w-auto rounded-lg shadow-lg shadow-cyan-500/20 border border-white/10">
             </div>
             
             <!-- Mobile Menu Button -->
@@ -78,9 +102,12 @@
                         <a href="/metrics" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors rounded-t-xl">
                             <i class="fas fa-chart-line mr-2 text-blue-400"></i> Prometheus
                         </a>
-                        <a href="/export/csv" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors rounded-b-xl">
+                        <a href="/export/csv" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors">
                             <i class="fas fa-file-csv mr-2 text-green-400"></i> CSV Report
                         </a>
+                        <button onclick="openExportModal()" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-800 hover:text-white transition-colors rounded-b-xl">
+                            <i class="fas fa-sliders mr-2 text-yellow-400"></i> CSV (Custom Range)
+                        </button>
                     </div>
                 </div>
                 
@@ -117,7 +144,7 @@
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
-                    <div id="camera-list" class="space-y-3">
+                    <div id="camera-list" class="space-y-3 overflow-y-auto pr-2 custom-scrollbar" style="max-height: 880px;">
                         <!-- Camera Items will be injected here -->
                         <div class="animate-pulse flex space-x-4">
                             <div class="rounded-full bg-slate-700 h-10 w-10"></div>
@@ -150,6 +177,34 @@
             <!-- Right Column: Active Monitor & Stats -->
             <div class="lg:col-span-2 space-y-6">
                 
+                <!-- Welcome Screen -->
+                <div id="welcome-screen" class="glass-panel h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-50"></div>
+                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-1000"></div>
+                    <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-1000"></div>
+                    <div class="relative z-10 space-y-6 max-w-lg">
+                        <div class="w-24 h-24 mx-auto bg-slate-800/50 rounded-2xl flex items-center justify-center border border-slate-700/50 shadow-xl mb-8 group-hover:scale-110 transition-transform duration-500">
+                            <i class="fas fa-video text-5xl text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]"></i>
+                        </div>
+                        <h2 class="text-4xl font-bold text-white tracking-tight">Smart Traffic <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">AI Monitor</span></h2>
+                        <div class="grid grid-cols-2 gap-4 mt-8">
+                            <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/30">
+                                <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">System Status</p>
+                                <div class="flex items-center justify-center gap-2"><span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span><span class="text-green-400 font-semibold">Online</span></div>
+                            </div>
+                            <div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/30">
+                                 <p class="text-slate-400 text-xs uppercase tracking-wider mb-1">AI Engine</p>
+                                 <p class="text-blue-400 font-semibold">Ready</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-lg leading-relaxed pt-4">Select a camera from the <span class="text-white font-medium">Available Cameras</span> list to view real-time traffic analysis and statistics.</p>
+                        <div class="pt-8 animate-bounce"><i class="fas fa-chevron-left text-slate-600 text-xl mr-2"></i><span class="text-slate-500 text-sm">Select Camera</span></div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Wrapper (Hidden by Default) -->
+                <div id="camera-dashboard" class="hidden space-y-6">
+                
                 <!-- Video Monitor Header & Toggle -->
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-bold text-white flex items-center gap-2">
@@ -164,22 +219,54 @@
 
                 <!-- Video Section (Hidden by Default) -->
                 <div id="video-section" class="hidden transition-all duration-300">
-                     <div class="glass-panel p-1 relative overflow-hidden group">
-                        <div class="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-sm px-3 py-1 rounded text-xs font-mono text-green-400 border border-green-500/30">
-                            <i class="fas fa-circle text-[8px] mr-2"></i>LIVE ANALYSIS
-                        </div>
-                        <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded-lg shadow-2xl border border-slate-700/50" alt="Live Stream">
+                     <div class="glass-panel p-1 relative overflow-hidden group border border-slate-700/50 shadow-2xl">
+                        <!-- HUD Overlay -->
+                        <div class="absolute inset-0 z-10 pointer-events-none hud-grid opacity-30"></div>
                         
-                        <!-- Overlay Stats -->
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
-                            <div class="flex gap-8">
+                        <!-- Top Bar -->
+                        <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-start p-4 bg-gradient-to-b from-black/80 to-transparent">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-red-500/20 backdrop-blur-md border border-red-500/50 px-3 py-1 rounded text-xs font-mono text-red-400 flex items-center gap-2 animate-pulse">
+                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                    REC
+                                </div>
+                                <div class="bg-black/40 backdrop-blur-md border border-white/10 px-3 py-1 rounded text-xs font-mono text-blue-400">
+                                    <i class="fas fa-microchip mr-1"></i> AI ACTIVE
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-mono text-gray-400" id="video-timestamp">00:00:00:00</div>
+                                <div class="text-[10px] text-gray-500">1080p | 30FPS</div>
+                            </div>
+                        </div>
+
+                        <img id="video-stream" src="{{ url_for('main.video_feed') }}" class="w-full rounded bg-black" alt="Live Stream">
+                        
+                        <!-- Crosshair Center -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 border border-white/20 rounded-full z-10 pointer-events-none flex items-center justify-center opacity-50">
+                            <div class="w-1 h-1 bg-white/50 rounded-full"></div>
+                        </div>
+                        
+                        <!-- Bottom Info -->
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 z-20">
+                            <div class="flex gap-8 items-end">
                                 <div>
-                                    <p class="text-xs text-gray-400 uppercase tracking-wider">Detection</p>
-                                    <p class="text-sm font-semibold text-white">YOLOv8 Large (TTA OFF)</p>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Model</p>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-cube text-blue-500"></i>
+                                        <span class="text-sm font-semibold text-white font-mono">YOLOv8-L</span>
+                                    </div>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-gray-400 uppercase tracking-wider">Status</p>
-                                    <p class="text-sm font-semibold text-green-400" id="fps-counter">SNAPSHOT (5s)</p>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Confidence</p>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-bullseye text-green-500"></i>
+                                        <span class="text-sm font-semibold text-green-400 font-mono">0.85+</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                    <span class="text-sm font-semibold text-white font-mono" id="fps-counter">LIVE FEED</span>
                                 </div>
                             </div>
                         </div>
@@ -189,32 +276,41 @@
                 <!-- Data Cards Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Total Vehicles Card -->
-                    <div class="glass-panel p-4 border-l-4 border-blue-500 bg-gradient-to-br from-slate-800 to-slate-900">
-                        <p class="text-xs text-gray-400 uppercase tracking-wider">Total Vehicles</p>
-                        <h2 class="text-3xl font-bold text-white mt-1" id="total-count">0</h2>
+                    <div class="glass-panel p-6 border-l-4 border-blue-500 bg-gradient-to-br from-slate-800 to-slate-900/80 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-blue-500/20 transition-all"></div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-2">Total Vehicles</p>
+                        <div class="flex items-end justify-between">
+                            <h2 class="text-4xl font-bold text-white tracking-tight" id="total-count">0</h2>
+                            <i class="fas fa-chart-bar text-blue-500/30 text-3xl mb-1"></i>
+                        </div>
+                        <div class="mt-4 flex items-center text-xs text-blue-300 bg-blue-500/10 px-2 py-1 rounded w-fit">
+                            <i class="fas fa-arrow-up mr-1"></i> Live Tracking
+                        </div>
                     </div>
 
                     <!-- Cars Card -->
-                    <div class="glass-panel p-4 border-l-4 border-green-500">
-                        <div class="flex justify-between items-start">
-                            <p class="text-xs text-gray-400 uppercase tracking-wider">Cars</p>
-                            <i class="fas fa-car text-green-500/20 text-xl"></i>
+                    <div class="glass-panel p-6 border-l-4 border-green-500 bg-gradient-to-br from-slate-800 to-slate-900/80 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-green-500/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-green-500/20 transition-all"></div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-2">Cars</p>
+                        <div class="flex items-end justify-between">
+                            <h2 class="text-3xl font-bold text-white tracking-tight" id="count-car">0</h2>
+                            <i class="fas fa-car text-green-500/30 text-3xl mb-1"></i>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mt-1" id="count-car">0</h2>
-                        <div class="mt-2 w-full bg-slate-700 rounded-full h-1">
-                            <div class="bg-green-500 h-1 rounded-full" style="width: 0%" id="bar-car"></div>
+                        <div class="mt-4 w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-400 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500" style="width: 0%" id="bar-car"></div>
                         </div>
                     </div>
 
                     <!-- Motorcycles Card -->
-                    <div class="glass-panel p-4 border-l-4 border-yellow-500">
-                        <div class="flex justify-between items-start">
-                            <p class="text-xs text-gray-400 uppercase tracking-wider">Motorcycles</p>
-                            <i class="fas fa-motorcycle text-yellow-500/20 text-xl"></i>
+                    <div class="glass-panel p-6 border-l-4 border-yellow-500 bg-gradient-to-br from-slate-800 to-slate-900/80 relative overflow-hidden group">
+                         <div class="absolute right-0 top-0 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-yellow-500/20 transition-all"></div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-semibold mb-2">Motorcycles</p>
+                        <div class="flex items-end justify-between">
+                            <h2 class="text-3xl font-bold text-white tracking-tight" id="count-motorcycle">0</h2>
+                            <i class="fas fa-motorcycle text-yellow-500/30 text-3xl mb-1"></i>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mt-1" id="count-motorcycle">0</h2>
-                        <div class="mt-2 w-full bg-slate-700 rounded-full h-1">
-                            <div class="bg-yellow-500 h-1 rounded-full" style="width: 0%" id="bar-motorcycle"></div>
+                        <div class="mt-4 w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-yellow-500 to-amber-400 h-full rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-500" style="width: 0%" id="bar-motorcycle"></div>
                         </div>
                     </div>
                 </div>
@@ -224,8 +320,8 @@
                     <div class="flex justify-between items-center mb-4 px-2 md:px-0">
                          <h3 class="text-sm font-semibold text-gray-400 uppercase">Activity Trend</h3>
                          <div class="flex bg-slate-800 rounded-lg p-1">
-                             <button onclick="setChartPeriod('30m')" id="btn-30m" class="px-3 py-1 text-xs font-medium rounded-md transition-all bg-slate-600 text-white shadow">30m</button>
-                             <button onclick="setChartPeriod('1h')" id="btn-1h" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-400 hover:text-white">1h</button>
+                             <button onclick="setChartPeriod('30m')" id="btn-30m" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-400 hover:text-white">30m</button>
+                             <button onclick="setChartPeriod('1h')" id="btn-1h" class="px-3 py-1 text-xs font-medium rounded-md transition-all bg-slate-600 text-white shadow">1h</button>
                              <button onclick="setChartPeriod('6h')" id="btn-6h" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-400 hover:text-white">6h</button>
                              <button onclick="setChartPeriod('12h')" id="btn-12h" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-400 hover:text-white">12h</button>
                              <button onclick="setChartPeriod('24h')" id="btn-24h" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-400 hover:text-white">24h</button>
@@ -288,10 +384,43 @@
                         </table>
                     </div>
                 </div>
+                </div>
 
             </div>
         </div>
 
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div class="glass-panel w-full max-w-md p-5">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-white font-semibold">Export CSV (Custom Range)</h3>
+                <button onclick="closeExportModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-400">Camera</label>
+                    <select id="export-camera" class="w-full bg-slate-900/50 border border-slate-700 rounded px-3 py-2 text-sm text-white">
+                        <option value="all">All Locations</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Start</label>
+                        <input id="export-start" type="datetime-local" class="w-full bg-slate-900/50 border border-slate-700 rounded px-3 py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">End</label>
+                        <input id="export-end" type="datetime-local" class="w-full bg-slate-900/50 border border-slate-700 rounded px-3 py-2 text-sm text-white">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <button onclick="closeExportModal()" class="px-3 py-2 bg-slate-800 text-slate-300 rounded">Cancel</button>
+                <button onclick="submitExport()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded">Download</button>
+            </div>
+        </div>
     </div>
 
     <!-- Add Camera Modal -->
@@ -510,31 +639,30 @@
                 infoDiv.className = "flex items-center gap-3 flex-1";
                 infoDiv.onclick = () => switchSource(source.id);
                 infoDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${isActive ? 'bg-blue-500 text-white' : 'bg-slate-700 text-gray-400'}">
-                        <i class="fas fa-video"></i>
+                    <div class="relative w-10 h-10 rounded-lg flex items-center justify-center ${isActive ? 'bg-blue-600 shadow-lg shadow-blue-500/30' : 'bg-slate-700/50'} transition-all overflow-hidden">
+                        <i class="fas fa-video ${isActive ? 'text-white' : 'text-gray-400'} z-10 relative"></i>
+                        ${isActive ? '<div class="absolute inset-0 bg-blue-500 blur opacity-20 animate-pulse"></div>' : ''}
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-300'}">${source.name}</h4>
                         <div class="flex items-center gap-2">
-                             <span id="badge-${source.id}" class="text-[10px] bg-slate-700 text-blue-300 px-1.5 rounded hidden">0</span>
-                             <p class="text-[10px] text-gray-500 truncate max-w-[100px]">${source.url}</p>
+                            <h4 class="text-sm font-semibold ${isActive ? 'text-white' : 'text-gray-300'}">${source.name}</h4>
+                            ${isActive ? '<span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                             <p class="text-[10px] text-gray-500 truncate max-w-[120px] opacity-70">${source.url}</p>
                         </div>
                     </div>
                 `;
 
                 // Actions Area
                 const actionDiv = document.createElement('div');
-                actionDiv.className = "flex items-center gap-2";
-                
-                if (isActive) {
-                    actionDiv.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>';
-                }
+                actionDiv.className = "flex items-center gap-1"; // tighter gap
                 
                 // Edit Button
                 const editBtn = document.createElement('button');
-                editBtn.className = "text-gray-500 hover:text-blue-400 p-1.5 rounded-full hover:bg-slate-600 transition-colors opacity-0 group-hover:opacity-100";
+                editBtn.className = "text-gray-500 hover:text-blue-400 p-2 rounded-lg hover:bg-slate-700/50 transition-all opacity-0 group-hover:opacity-100";
                 editBtn.title = "Edit Camera";
-                editBtn.innerHTML = '<i class="fas fa-edit text-xs"></i>';
+                editBtn.innerHTML = '<i class="fas fa-cog text-xs"></i>'; // Changed to cog for pro feel
                 editBtn.onclick = (e) => {
                     e.stopPropagation();
                     openEditModal(source);
@@ -542,7 +670,7 @@
 
                 // Delete Button
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = "text-gray-500 hover:text-red-500 p-1.5 rounded-full hover:bg-slate-600 transition-colors opacity-0 group-hover:opacity-100";
+                deleteBtn.className = "text-gray-500 hover:text-red-500 p-2 rounded-lg hover:bg-slate-700/50 transition-all opacity-0 group-hover:opacity-100";
                 deleteBtn.title = "Delete Camera";
                 deleteBtn.innerHTML = '<i class="fas fa-trash-alt text-xs"></i>';
                 deleteBtn.onclick = (e) => {
@@ -684,6 +812,13 @@
 
         // Switch Source
         async function switchSource(id) {
+            activeSourceId = id;
+            // Switch View
+            const welcome = document.getElementById('welcome-screen');
+            const dashboard = document.getElementById('camera-dashboard');
+            if (welcome) welcome.classList.add('hidden');
+            if (dashboard) dashboard.classList.remove('hidden');
+
             // Optimistic UI Update
             const items = document.getElementById('camera-list').children;
             // (Simple reload is better to ensure state sync)
@@ -700,6 +835,7 @@
                     fetchSources();
                     // Reset Charts/Stats in UI
                     resetStatsUI();
+                    setChartPeriod('1h');
                     // Force reload video if visible
                     const videoSection = document.getElementById('video-section');
                     if (!videoSection.classList.contains('hidden')) {
@@ -777,7 +913,7 @@
             }
         });
 
-        let chartPeriod = '30m';
+        let chartPeriod = '1h'; // Default to 1h view as requested to be lighter
         let modalChartInstance = null;
         let dailyDonutChart = null;
         let currentModalTs = null;
@@ -797,6 +933,11 @@
                 
             fetchHistory();
         }
+
+        // Initialize button state for default period
+        document.addEventListener('DOMContentLoaded', () => {
+             setChartPeriod(chartPeriod);
+        });
 
         function viewDailyDetails(ts, label) {
              openDailyModal(ts, label);
@@ -991,7 +1132,11 @@
 
         async function fetchHistory() {
              try {
-                const response = await fetch(`/api/history?period=${chartPeriod}`);
+                let url = `/api/history?period=${chartPeriod}`;
+                if (activeSourceId) {
+                    url += `&camera_id=${activeSourceId}`;
+                }
+                const response = await fetch(url);
                 const data = await response.json();
                 
                 if (data && data.length > 0) {
@@ -1071,17 +1216,29 @@
                 const response = await fetch('/api/stats');
                 const data = await response.json();
 
-                // Update Total (Accumulated) from Active Stats or use Global Total if preferred
-                // Current design: Show Active Stats in big cards
+                // Determine which stats to show (Active Camera vs Global)
+                let targetStats = null;
                 
-                // Use fallback if active stats empty (e.g. no camera active)
-                const accCount = data.accumulated_count || 0;
+                if (activeSourceId && data.sources && data.sources[activeSourceId]) {
+                    // Use Active Camera Stats
+                    targetStats = data.sources[activeSourceId];
+                } else if (data.global_total) {
+                    // Fallback to Global Stats
+                    targetStats = data.global_total;
+                } else {
+                    // Legacy/Root Fallback
+                    targetStats = data;
+                }
+
+                // Extract values
+                let accCount = targetStats.accumulated_count || 0;
+                let accCars = targetStats.cars || (targetStats.accumulated_class_counts ? (targetStats.accumulated_class_counts[0] || 0) : 0);
+                let accMotors = targetStats.motorcycles || (targetStats.accumulated_class_counts ? (targetStats.accumulated_class_counts[1] || 0) : 0);
+                let curCars = targetStats.current_cars || (targetStats.current_class_counts ? (targetStats.current_class_counts[0] || 0) : 0);
+                let curMotors = targetStats.current_motorcycles || (targetStats.current_class_counts ? (targetStats.current_class_counts[1] || 0) : 0);
+                
                 document.getElementById('total-count').innerText = accCount;
                 document.getElementById('fps-counter').innerText = "LIVE";
-
-                // Data Sources
-                const accCounts = data.accumulated_class_counts || {};
-                const curCounts = data.current_class_counts || {};
                 
                 // Helper to update UI
                 const updateUI = (id, accVal, curVal) => {
@@ -1103,15 +1260,9 @@
                     if(elAcc) elAcc.innerText = accVal;
                 };
 
-                // NOTE: Python uses Integer keys (0, 1), but JSON converts them to Strings ("0", "1")
-                const getCount = (obj, key) => {
-                    if (!obj) return 0;
-                    return obj[key] || obj[String(key)] || 0;
-                };
-
                 // 0 = Car, 1 = Motorcycle
-                updateUI('car', getCount(accCounts, 0), getCount(curCounts, 0));
-                updateUI('motorcycle', getCount(accCounts, 1), getCount(curCounts, 1));
+                updateUI('car', accCars, curCars);
+                updateUI('motorcycle', accMotors, curMotors);
 
                 // Update Time Window Stats Table
                 if (data.window_stats) {
@@ -1152,6 +1303,8 @@
                 
                 // Update Sidebar Badges
                 if (data.sources) {
+                    // Cache sources for export modal
+                    window.CCTV_SOURCES = Object.entries(data.sources).map(([id, stats]) => ({ id, name: stats.name }));
                     Object.entries(data.sources).forEach(([id, stats]) => {
                         const badge = document.getElementById(`badge-${id}`);
                         if (badge) {
@@ -1263,6 +1416,37 @@
             document.getElementById('reset-username').focus();
         }
 
+        function openExportModal() {
+            const modal = document.getElementById('export-modal');
+            const sel = document.getElementById('export-camera');
+            // Populate camera list once
+            if (sel.options.length <= 1 && window.CCTV_SOURCES) {
+                Object.values(window.CCTV_SOURCES).forEach(src => {
+                    const opt = document.createElement('option');
+                    opt.value = src.id;
+                    opt.text = src.name || src.id;
+                    sel.appendChild(opt);
+                });
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('export-modal').classList.add('hidden');
+        }
+
+        function submitExport() {
+            const cam = document.getElementById('export-camera').value;
+            const start = document.getElementById('export-start').value; // "YYYY-MM-DDTHH:MM"
+            const end = document.getElementById('export-end').value;
+            const qs = new URLSearchParams();
+            if (cam && cam !== 'all') qs.append('camera_id', cam);
+            if (start) qs.append('start', start.replace('T', ' '));
+            if (end) qs.append('end', end.replace('T', ' '));
+            const url = '/export/csv' + (qs.toString() ? ('?' + qs.toString()) : '');
+            window.open(url, '_blank');
+            closeExportModal();
+        }
         function closeResetModal() {
             document.getElementById('reset-login-modal').classList.add('hidden');
         }
@@ -1316,5 +1500,12 @@
             menu.classList.toggle('flex');
         });
     </script>
+
+    <!-- Footer Watermark -->
+    <footer class="fixed bottom-4 right-6 z-40 opacity-50 hover:opacity-100 transition-opacity">
+        <a href="https://avicenafahmi.com" target="_blank" class="text-xs font-mono text-slate-500 hover:text-blue-400 flex items-center gap-2">
+            <span>&copy; avicenafahmi.com</span>
+        </a>
+    </footer>
 </body>
 </html>

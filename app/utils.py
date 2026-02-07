@@ -412,11 +412,26 @@ def load_stats():
             
         try:
             with open(file_path, 'r') as f:
-                stats = json.load(f)
+                data = json.load(f)
+                
+                # Check if it's nested structure (v2)
+                stats = {}
+                if "sources" in data:
+                    stats = data["sources"]
+                else:
+                    # Legacy flat structure or unexpected format
+                    # If it has UUID keys, it's legacy sources
+                    # Filter out non-dict or special keys
+                    stats = {k: v for k, v in data.items() if isinstance(v, dict) and "id" not in v} 
+                    # Actually legacy was just {uuid: data}
+                    if not stats and data: # fallback
+                         stats = data
+
                 # Convert history lists back to deque
-                for src_id, data in stats.items():
-                    if "history" in data:
-                        data["history"] = deque(data["history"], maxlen=HISTORY_MAX_LEN)
+                for src_id, src_data in stats.items():
+                    if isinstance(src_data, dict) and "history" in src_data:
+                        src_data["history"] = deque(src_data["history"], maxlen=HISTORY_MAX_LEN)
+                
                 print(f"[INFO] Successfully loaded stats from {file_path}")
                 return stats
         except Exception as e:
@@ -428,11 +443,52 @@ def load_stats():
 def save_stats():
     try:
         # Create a copy for saving, converting deque to list
-        stats_to_save = {}
+        sources_data = {}
+        global_accumulated = 0
+        global_cars = 0
+        global_motors = 0
+        
+        global_current = 0
+        global_current_cars = 0
+        global_current_motors = 0
+        
+        all_history = []
+
         for k, v in g.global_stats.items():
-            stats_to_save[k] = v.copy()
+            sources_data[k] = v.copy()
             if "history" in v and isinstance(v["history"], deque):
-                stats_to_save[k]["history"] = list(v["history"])
+                # Convert to list for JSON serialization
+                hist_list = list(v["history"])
+                sources_data[k]["history"] = hist_list
+                all_history.extend(hist_list)
+            
+            # Aggregate globals
+            global_accumulated += v.get("accumulated_count", 0)
+            global_cars += v.get("accumulated_class_counts", {}).get("0", 0)
+            global_motors += v.get("accumulated_class_counts", {}).get("1", 0)
+            
+            # Aggregate current
+            global_current += v.get("current_count", 0)
+            global_current_cars += v.get("current_class_counts", {}).get("0", 0)
+            global_current_motors += v.get("current_class_counts", {}).get("1", 0)
+        
+        # Calculate Global Window Stats
+        window_stats = calculate_window_stats(all_history)
+
+        # Construct final structure
+        final_data = {
+            "sources": sources_data,
+            "global_total": {
+                "accumulated_count": global_accumulated,
+                "cars": global_cars,
+                "motorcycles": global_motors,
+                "current_count": global_current,
+                "current_cars": global_current_cars,
+                "current_motorcycles": global_current_motors
+            },
+            "window_stats": window_stats,
+            "last_update": time.time()
+        }
         
         # Atomic Write: Write to temp -> Move to final
         temp_file = STATS_FILE + ".tmp"
@@ -440,7 +496,7 @@ def save_stats():
         
         # Write to temp file first
         with open(temp_file, 'w') as f:
-            json.dump(stats_to_save, f, indent=4)
+            json.dump(final_data, f, indent=4)
             
         # If write successful, backup old file then replace
         if os.path.exists(STATS_FILE):
